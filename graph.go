@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"strings"
 
 	v1pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
@@ -24,6 +25,10 @@ type DOT struct {
 	Format string
 }
 
+// formatFunc is a function that generates the output format string for a TaskGraph
+type formatFuncType func(graph *TaskGraph, format string) string
+
+// BuildTaskGraph creates a TaskGraph from a list of PipelineTasks
 func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	graph := &TaskGraph{
 		Nodes: make(map[string]*TaskNode),
@@ -49,6 +54,7 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	return graph
 }
 
+// ToDOT converts a TaskGraph to a DOT graph
 func (g *TaskGraph) ToDOT() *DOT {
 	dot := &DOT{
 		Name:   g.PipelineName,
@@ -64,6 +70,7 @@ func (g *TaskGraph) ToDOT() *DOT {
 	return dot
 }
 
+// String converts a DOT graph to a string
 func (d *DOT) String() string {
 	var buf bytes.Buffer
 	buf.WriteString(fmt.Sprintf("%s \"%s\" {\n", d.Format, d.Name))
@@ -74,14 +81,18 @@ func (d *DOT) String() string {
 	return buf.String()
 }
 
+// ToPlantUML converts a TaskGraph to a PlantUML graph
 func (g *TaskGraph) ToPlantUML() string {
 	plantuml := "@startuml\n\n"
 	for _, node := range g.Nodes {
+		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 		nodeName := strings.ReplaceAll(node.Name, "-", "_")
+		// the root node is the one with no dependencies and that task starts the execution immediately
 		if len(node.Dependencies) == 0 {
 			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
 		}
 		for _, dep := range node.Dependencies {
+			// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 			depName := strings.ReplaceAll(dep.Name, "-", "_")
 			plantuml += fmt.Sprintf("%s <-down- %s\n", nodeName, depName)
 		}
@@ -89,4 +100,17 @@ func (g *TaskGraph) ToPlantUML() string {
 	}
 	plantuml += "@enduml\n"
 	return plantuml
+}
+
+// formatFunc generates the output format string for a TaskGraph based on the specified format
+var formatFunc formatFuncType = func(graph *TaskGraph, format string) string {
+	switch strings.ToLower(format) {
+	case "dot":
+		return graph.ToDOT().String()
+	case "plantuml":
+		return graph.ToPlantUML()
+	default:
+		log.Fatalf("Invalid output format: %s", format)
+		return ""
+	}
 }
