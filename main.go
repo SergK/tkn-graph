@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
@@ -17,6 +18,7 @@ type Options struct {
 	Namespace    string
 	ObjectKind   string
 	OutputFormat string
+	OutputDir    string
 }
 
 func main() {
@@ -100,8 +102,22 @@ func main() {
 				// Generate the output format string
 				output := formatFunc(graph, options.OutputFormat)
 
-				// Print the graph
-				fmt.Println(output)
+				// Print or save the graph
+				if options.OutputDir == "" {
+					// Print the graph to the screen
+					fmt.Println(output)
+				} else {
+					// Save the graph to a file
+					err := os.MkdirAll(options.OutputDir, 0755)
+					if err != nil {
+						log.Fatalf("Failed to create directory %s: %v", options.OutputDir, err)
+					}
+					filename := filepath.Join(options.OutputDir, fmt.Sprintf("%s.%s", graph.PipelineName, options.OutputFormat))
+					err = os.WriteFile(filename, []byte(output), 0644)
+					if err != nil {
+						log.Fatalf("Failed to write file %s: %v", filename, err)
+					}
+				}
 			}
 		},
 	}
@@ -109,7 +125,8 @@ func main() {
 	// Define the command-line options
 	rootCmd.Flags().StringVar(&options.Namespace, "namespace", "", "the Kubernetes namespace to use")
 	rootCmd.Flags().StringVar(&options.ObjectKind, "kind", "Pipeline", "the kind of the Tekton object to parse (Pipeline or PipelineRun)")
-	rootCmd.Flags().StringVar(&options.OutputFormat, "output-format", "dot", "the output format (dot or plantuml)")
+	rootCmd.Flags().StringVar(&options.OutputFormat, "output-format", "dot", "the output format (dot or puml)")
+	rootCmd.Flags().StringVar(&options.OutputDir, "output-dir", "", "the directory to save the output files. Otherwise, the output is printed to the screen")
 
 	// Parse the command-line options
 	if err := rootCmd.Execute(); err != nil {

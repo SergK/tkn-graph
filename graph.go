@@ -107,7 +107,7 @@ var formatFunc formatFuncType = func(graph *TaskGraph, format string) string {
 	switch strings.ToLower(format) {
 	case "dot":
 		return graph.ToDOT().String()
-	case "plantuml":
+	case "puml":
 		return graph.ToPlantUML()
 	default:
 		log.Fatalf("Invalid output format: %s", format)

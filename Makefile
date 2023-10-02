@@ -31,3 +31,8 @@ lint:
 .PHONY: fmt
 fmt:
 	$(GOFMT) $(SRC_DIR)/...
+
+# Clean targets
+.PHONY: clean
+clean:
+	rm -rf $(BIN_DIR)
