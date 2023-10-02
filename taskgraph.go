@@ -83,7 +83,7 @@ func (d *DOT) String() string {
 
 // ToPlantUML converts a TaskGraph to a PlantUML graph
 func (g *TaskGraph) ToPlantUML() string {
-	plantuml := "@startuml\n\n"
+	plantuml := fmt.Sprintf("@startuml\ntitle %s\n\n", g.PipelineName)
 	for _, node := range g.Nodes {
 		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 		nodeName := strings.ReplaceAll(node.Name, "-", "_")
@@ -96,10 +96,20 @@ func (g *TaskGraph) ToPlantUML() string {
 			depName := strings.ReplaceAll(dep.Name, "-", "_")
 			plantuml += fmt.Sprintf("%s <-down- %s\n", nodeName, depName)
 		}
-		plantuml += "\n"
 	}
-	plantuml += "@enduml\n"
+	plantuml += "\n@enduml\n"
 	return plantuml
+}
+
+// ToMermaid converts a TaskGraph to a mermaid graph
+func (g *TaskGraph) ToMermaid() string {
+	mermaid := fmt.Sprintf("---\ntitle: %s\n---\nflowchart TD\n", g.PipelineName)
+	for _, node := range g.Nodes {
+		for _, dep := range node.Dependencies {
+			mermaid += fmt.Sprintf("   %s --> %s\n", dep.Name, node.Name)
+		}
+	}
+	return mermaid
 }
 
 // formatFunc generates the output format string for a TaskGraph based on the specified format
@@ -109,6 +119,8 @@ var formatFunc formatFuncType = func(graph *TaskGraph, format string) string {
 		return graph.ToDOT().String()
 	case "puml":
 		return graph.ToPlantUML()
+	case "mmd":
+		return graph.ToMermaid()
 	default:
 		log.Fatalf("Invalid output format: %s", format)
 		return ""

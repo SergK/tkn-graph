@@ -28,6 +28,10 @@ func main() {
 	rootCmd := &cobra.Command{
 		Use:   "graph",
 		Short: "Generate a graph of a Tekton object",
+		Long:  "graph is a command-line tool for generating graphs from Tekton kind: Pipelines and kind: PipelineRuns.",
+		Example: `  graph --namespace my-namespace --kind Pipeline --output-format dot
+  graph --namespace my-namespace --kind PipelineRun --output-format puml
+  graph --namespace my-namespace --kind Pipeline --output-format mmd --output-dir /tmp/output`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Create the Kubernetes client
 			config, err := rest.InClusterConfig()
@@ -123,10 +127,14 @@ func main() {
 	}
 
 	// Define the command-line options
-	rootCmd.Flags().StringVar(&options.Namespace, "namespace", "", "the Kubernetes namespace to use")
-	rootCmd.Flags().StringVar(&options.ObjectKind, "kind", "Pipeline", "the kind of the Tekton object to parse (Pipeline or PipelineRun)")
-	rootCmd.Flags().StringVar(&options.OutputFormat, "output-format", "dot", "the output format (dot or puml)")
-	rootCmd.Flags().StringVar(&options.OutputDir, "output-dir", "", "the directory to save the output files. Otherwise, the output is printed to the screen")
+	rootCmd.Flags().StringVar(
+		&options.Namespace, "namespace", "", "the Kubernetes namespace to use. Will try to get namespace from KUBECONFIG if not specified then fallback to 'default'")
+	rootCmd.Flags().StringVar(
+		&options.ObjectKind, "kind", "Pipeline", "the kind of the Tekton object to parse (Pipeline or PipelineRun)")
+	rootCmd.Flags().StringVar(
+		&options.OutputFormat, "output-format", "dot", "the output format (dot - DOT, puml - PlantUML or mmd - Mermaid)")
+	rootCmd.Flags().StringVar(
+		&options.OutputDir, "output-dir", "", "the directory to save the output files. Otherwise, the output is printed to the screen")
 
 	// Parse the command-line options
 	if err := rootCmd.Execute(); err != nil {
