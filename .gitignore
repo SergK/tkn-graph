@@ -1,1 +1,3 @@
 bin/
+output/
+.DS_Store

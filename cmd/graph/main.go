@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 
 	"github.com/sergk/tkn-graph/pkg/taskgraph"
-
 	"github.com/spf13/cobra"
 	"github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -80,7 +79,8 @@ func main() {
 				if len(pipelines.Items) == 0 {
 					log.Fatalf("No Pipelines found in namespace %s", options.Namespace)
 				}
-				for _, pipeline := range pipelines.Items {
+				for i := range pipelines.Items {
+					pipeline := &pipelines.Items[i]
 					graph := taskgraph.BuildTaskGraph(pipeline.Spec.Tasks)
 					graph.PipelineName = pipeline.Name
 					graphs = append(graphs, graph)
@@ -94,7 +94,8 @@ func main() {
 				if len(pipelineRuns.Items) == 0 {
 					log.Fatalf("No PipelineRuns found in namespace %s", options.Namespace)
 				}
-				for _, pipelineRun := range pipelineRuns.Items {
+				for i := range pipelineRuns.Items {
+					pipelineRun := &pipelineRuns.Items[i]
 					graph := taskgraph.BuildTaskGraph(pipelineRun.Status.PipelineSpec.Tasks)
 					graph.PipelineName = pipelineRun.Name
 					graphs = append(graphs, graph)
@@ -120,7 +121,7 @@ func main() {
 						log.Fatalf("Failed to create directory %s: %v", options.OutputDir, err)
 					}
 					filename := filepath.Join(options.OutputDir, fmt.Sprintf("%s.%s", graph.PipelineName, options.OutputFormat))
-					err = os.WriteFile(filename, []byte(output), 0644)
+					err = os.WriteFile(filename, []byte(output), 0600)
 					if err != nil {
 						log.Fatalf("Failed to write file %s: %v", filename, err)
 					}

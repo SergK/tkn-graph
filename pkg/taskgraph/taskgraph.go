@@ -36,7 +36,8 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	}
 
 	// Create a node for each task and add it to the graph
-	for _, task := range tasks {
+	for i := range tasks {
+		task := &tasks[i]
 		node := &TaskNode{
 			Name:        task.Name,
 			TaskRefName: task.TaskRef.Name,
