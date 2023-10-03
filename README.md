@@ -1,5 +1,19 @@
 # Tekton Graph
 
+<!-- TOC -->
+
+- [Tekton Graph](#tekton-graph)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Run the Command](#run-the-command)
+    - [Examples](#examples)
+    - [Output](#output)
+  - [Contributing](#contributing)
+  - [License](#license)
+
+<!-- /TOC -->
+
 The provided Go program is a command-line tool named `tkn-graph` for generating graphs from Tekton objects. This tool is used to visualize the structure and relationships of Tekton `Pipelines` and `PipelineRuns` by creating graphical representations of their tasks.
 
 ## Prerequisites
