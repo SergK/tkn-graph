@@ -16,6 +16,7 @@ type TaskGraph struct {
 
 type TaskNode struct {
 	Name         string
+	TaskRefName  string // Name of the kind: Task referenced by this task in the pipeline
 	Dependencies []*TaskNode
 }
 
@@ -37,7 +38,8 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	// Create a node for each task
 	for _, task := range tasks {
 		node := &TaskNode{
-			Name: task.Name,
+			Name:        task.Name,
+			TaskRefName: task.TaskRef.Name,
 		}
 		graph.Nodes[task.Name] = node
 	}
