@@ -19,6 +19,7 @@ type Options struct {
 	ObjectKind   string
 	OutputFormat string
 	OutputDir    string
+	WithTaskRef  bool
 }
 
 func main() {
@@ -104,7 +105,7 @@ func main() {
 			// Generate graph for each object
 			for _, graph := range graphs {
 				// Generate the output format string
-				output := formatFunc(graph, options.OutputFormat)
+				output := formatFunc(graph, options.OutputFormat, options.WithTaskRef)
 
 				// Print or save the graph
 				if options.OutputDir == "" {
@@ -135,6 +136,8 @@ func main() {
 		&options.OutputFormat, "output-format", "dot", "the output format (dot - DOT, puml - PlantUML or mmd - Mermaid)")
 	rootCmd.Flags().StringVar(
 		&options.OutputDir, "output-dir", "", "the directory to save the output files. Otherwise, the output is printed to the screen")
+	rootCmd.Flags().BoolVar(
+		&options.WithTaskRef, "with-task-ref", false, "Include TaskRefName information in the output")
 
 	// Parse the command-line options
 	if err := rootCmd.Execute(); err != nil {
