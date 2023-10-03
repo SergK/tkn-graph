@@ -150,7 +150,6 @@ linters-settings:
       - dot # Dot section: contains all dot imports. This section is not present unless explicitly enabled.
       - default # Default section: contains all imports that could not be matched to another section type.
       - prefix(github.com/epam) # Custom section: groups all imports with the specified Prefix.
-      - prefix(github.com/epam/edp-sonar-operator) # Custom section: groups all imports with the specified Prefix.
 
     # Skip generated files.
     skip-generated: true
@@ -333,7 +332,7 @@ linters-settings:
   goimports:
     # put imports beginning with prefix after 3rd-party packages;
     # it's a comma-separated list of prefixes
-    local-prefixes: github.com/epam/edp-sonar-operator/v2
+    local-prefixes: github.com/sergk/tkn-graph/pkg/taskgraph
 
   golint:
     # minimal confidence for issues, default is 0.8
