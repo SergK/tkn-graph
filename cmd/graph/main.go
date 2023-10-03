@@ -6,7 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"tkn-graph/pkg/taskgraph"
+
+	"github.com/sergk/tkn-graph/pkg/taskgraph"
 
 	"github.com/spf13/cobra"
 	"github.com/tektoncd/pipeline/pkg/client/clientset/versioned"

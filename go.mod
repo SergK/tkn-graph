@@ -1,8 +1,6 @@
-module tkn-graph
+module github.com/sergk/tkn-graph
 
 go 1.21.1
-
-replace taskgraph => ./pkg/taskgraph
 
 require k8s.io/client-go v0.28.2
 

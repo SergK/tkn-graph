@@ -28,7 +28,7 @@ Before using the `tkn-graph` tool, you should ensure you have the following prer
 
 ## Installation
 
-To install the project, you need to have Go installed on your system. You can download and install Go from the official website: https://golang.org/dl/
+To install the project, you need to have Go installed on your system. You can download and install Go from the official [website](https://golang.org/dl/).
 
 Once you have Go installed, you can build the project using the following command:
 
