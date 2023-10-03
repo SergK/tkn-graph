@@ -5,7 +5,7 @@ before:
     - go mod tidy
 
 builds:
-- targets: [go_first_class]
+- main: ./cmd/graph/main.go
   env:
     - CGO_ENABLED=0
   goos:
