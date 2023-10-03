@@ -92,7 +92,42 @@ The `tkn-graph` tool is flexible and can be customized to meet your specific nee
 - Generate a PlantUML format graph for PipelineRuns in the "my-namespace" namespace and save it to a file:
 
   ```bash
-  tkn-graph --namespace my-namespace --kind PipelineRun --output-format puml --output-dir /path/to/output
+  $ tkn-graph --namespace my-namespace --kind PipelineRun --output-format puml --output-dir output
+
+  $ ls -1 output
+
+  dotnet-6-0-lib-release-create-build-release-1.2-build-fhm9j.puml
+  dotnet-6-0-lib-release-create-build-release-1.2-review-ld6d8.puml
+  java11-mvn-create-def-build-master-build-jckk4.puml
+  java11-mvn-create-def-build-master-review-rs7s5.puml
+  java17-grd-crt-edp-dep-release-1.2-build-5z5s2.puml
+  java17-grd-crt-edp-dep-release-1.2-review-qnws2.puml
+  js-create-br-edp-build-new-build-dhjg5.puml
+  js-create-br-edp-build-new-review-28rmr.puml
+  python-3-8-release-create-build-release-1.2-build-fmt6f.puml
+  python-3-8-release-create-build-release-1.2-review-rnwpq.puml
+
+  $ cat output/python-3-8-release-create-build-release-1.2-review-rnwpq.puml
+
+  @startuml
+  hide empty description
+  title python-3-8-release-create-build-release-1.2-review-rnwpq
+
+  [*] --> gerrit_notify
+  init_values <-down- fetch_repository
+  helm_docs <-down- fetch_repository
+  [*] --> fetch_repository
+  test <-down- compile
+  fetch_target_branch <-down- test
+  sonar_prepare_files <-down- fetch_target_branch
+  sonar <-down- sonar_prepare_files
+  dockerfile_lint <-down- fetch_repository
+  dockerbuild_verify <-down- sonar
+  dockerbuild_verify <-down- dockerfile_lint
+  helm_lint <-down- fetch_repository
+  compile <-down- init_values
+
+  @enduml
   ```
 
 - Generate a Mermaid format graph with TaskRef for Pipelines in the "my-namespace" namespace and save it to a file:
@@ -104,39 +139,39 @@ The `tkn-graph` tool is flexible and can be customized to meet your specific nee
   title: python-3-8-release-create-build-release-1.2-review-rnwpq
   ---
   flowchart TD
-    fetch-repository("`fetch-repository
-    (git-clone)`") --> init-values("`init-values
-    (init-values)`")
-    fetch-repository("`fetch-repository
-    (git-clone)`") --> helm-docs("`helm-docs
-    (helm-docs)`")
-    compile("`compile
-    (python)`") --> test("`test
-    (python)`")
-    test("`test
-    (python)`") --> fetch-target-branch("`fetch-target-branch
-    (git-cli)`")
-    sonar-prepare-files("`sonar-prepare-files
-    (sonar-prepare-files-general)`") --> sonar("`sonar
-    (sonarqube-scanner)`")
-    sonar("`sonar
-    (sonarqube-scanner)`") --> dockerbuild-verify("`dockerbuild-verify
-    (dockerbuild-verify)`")
-    dockerfile-lint("`dockerfile-lint
-    (hadolint)`") --> dockerbuild-verify("`dockerbuild-verify
-    (dockerbuild-verify)`")
-    init-values("`init-values
-    (init-values)`") --> compile("`compile
-    (python)`")
-    fetch-target-branch("`fetch-target-branch
-    (git-cli)`") --> sonar-prepare-files("`sonar-prepare-files
-    (sonar-prepare-files-general)`")
-    fetch-repository("`fetch-repository
-    (git-clone)`") --> dockerfile-lint("`dockerfile-lint
-    (hadolint)`")
-    fetch-repository("`fetch-repository
-    (git-clone)`") --> helm-lint("`helm-lint
-    (helm-lint)`")
+    test("test
+    (python)") --> fetch-target-branch("fetch-target-branch
+    (git-cli)")
+    fetch-repository("fetch-repository
+    (git-clone)") --> helm-docs("helm-docs
+    (helm-docs)")
+    compile("compile
+    (python)") --> test("test
+    (python)")
+    fetch-repository("fetch-repository
+    (git-clone)") --> init-values("init-values
+    (init-values)")
+    init-values("init-values
+    (init-values)") --> compile("compile
+    (python)")
+    fetch-target-branch("fetch-target-branch
+    (git-cli)") --> sonar-prepare-files("sonar-prepare-files
+    (sonar-prepare-files-general)")
+    sonar-prepare-files("sonar-prepare-files
+    (sonar-prepare-files-general)") --> sonar("sonar
+    (sonarqube-scanner)")
+    fetch-repository("fetch-repository
+    (git-clone)") --> dockerfile-lint("dockerfile-lint
+    (hadolint)")
+    sonar("sonar
+    (sonarqube-scanner)") --> dockerbuild-verify("dockerbuild-verify
+    (dockerbuild-verify)")
+    dockerfile-lint("dockerfile-lint
+    (hadolint)") --> dockerbuild-verify("dockerbuild-verify
+    (dockerbuild-verify)")
+    fetch-repository("fetch-repository
+    (git-clone)") --> helm-lint("helm-lint
+    (helm-lint)")
   ```
 
 ### Output
