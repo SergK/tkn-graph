@@ -108,7 +108,10 @@ func main() {
 			// Generate graph for each object
 			for _, graph := range graphs {
 				// Generate the output format string
-				output := taskgraph.FormatFunc(graph, options.OutputFormat, options.WithTaskRef)
+				output, err := taskgraph.FormatFunc(graph, options.OutputFormat, options.WithTaskRef)
+				if err != nil {
+					log.Fatalf("Failed to generate output: %v", err)
+				}
 
 				// Print or save the graph
 				if options.OutputDir == "" {

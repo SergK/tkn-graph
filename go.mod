@@ -2,7 +2,10 @@ module github.com/sergk/tkn-graph
 
 go 1.21.1
 
-require k8s.io/client-go v0.28.2
+require (
+	github.com/stretchr/testify v1.8.4
+	k8s.io/client-go v0.28.2
+)
 
 require (
 	contrib.go.opencensus.io/exporter/ocagent v0.7.1-0.20200907061046-05415f1de66d // indirect
@@ -32,6 +35,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.14.0 // indirect
 	github.com/prometheus/client_model v0.3.0 // indirect
 	github.com/prometheus/common v0.37.0 // indirect

@@ -23,7 +23,7 @@ build: ## build the binary
 # Test targets
 .PHONY: test
 test: ## run tests
-	$(GOTEST) -v ./...
+	$(GOTEST) -v -coverprofile=coverage.out ./...
 
 # Lint targets
 .PHONY: lint

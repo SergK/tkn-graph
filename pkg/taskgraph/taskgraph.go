@@ -3,7 +3,6 @@ package taskgraph
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"strings"
 
 	v1pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
@@ -27,8 +26,10 @@ type DOT struct {
 }
 
 // FormatFunc is a function that generates the output format string for a TaskGraph
-type FormatFuncType func(graph *TaskGraph, format string, withTaskRef bool) string
+type FormatFuncType func(graph *TaskGraph, format string, withTaskRef bool) (string, error)
 
+// In the case where the order of tasks is arbitrary, it is necessary to create all the nodes first
+// and then add the dependencies in a separate loop (since dependencies doesn't exist in TaskRef).
 // BuildTaskGraph creates a TaskGraph from a list of PipelineTasks
 func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	graph := &TaskGraph{
@@ -43,18 +44,17 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 			TaskRefName: task.TaskRef.Name,
 		}
 		graph.Nodes[task.Name] = node
+	}
+
+	// Add dependencies to the nodes
+	for i := range tasks {
+		task := &tasks[i]
+		node := graph.Nodes[task.Name]
 
 		// Add dependencies to the node
-		for _, dep := range task.RunAfter {
-			depNode, ok := graph.Nodes[dep]
-			if !ok {
-				// Create a new node for the dependency if it doesn't already exist
-				depNode = &TaskNode{
-					Name: dep,
-				}
-				graph.Nodes[dep] = depNode
-			}
-			node.Dependencies = append(node.Dependencies, depNode)
+		for _, depName := range task.RunAfter {
+			depNode := graph.Nodes[depName]
+			depNode.Dependencies = append(depNode.Dependencies, node)
 		}
 	}
 
@@ -180,25 +180,24 @@ func (g *TaskGraph) ToMermaidWithTaskRef() string {
 }
 
 // formatFunc generates the output format string for a TaskGraph based on the specified format
-var FormatFunc FormatFuncType = func(graph *TaskGraph, format string, withTaskRef bool) string {
+var FormatFunc FormatFuncType = func(graph *TaskGraph, format string, withTaskRef bool) (string, error) {
 	switch strings.ToLower(format) {
 	case "dot":
 		if withTaskRef {
-			return graph.ToDOTWithTaskRef().String()
+			return graph.ToDOTWithTaskRef().String(), nil
 		}
-		return graph.ToDOT().String()
+		return graph.ToDOT().String(), nil
 	case "puml":
 		if withTaskRef {
-			return graph.ToPlantUMLWithTaskRef()
+			return graph.ToPlantUMLWithTaskRef(), nil
 		}
-		return graph.ToPlantUML()
+		return graph.ToPlantUML(), nil
 	case "mmd":
 		if withTaskRef {
-			return graph.ToMermaidWithTaskRef()
+			return graph.ToMermaidWithTaskRef(), nil
 		}
-		return graph.ToMermaid()
+		return graph.ToMermaid(), nil
 	default:
-		log.Fatalf("Invalid output format: %s", format)
-		return ""
+		return "", fmt.Errorf("Invalid output format: %s", format)
 	}
 }
