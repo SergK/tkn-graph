@@ -35,20 +35,24 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 		Nodes: make(map[string]*TaskNode),
 	}
 
-	// Create a node for each task
+	// Create a node for each task and add it to the graph
 	for _, task := range tasks {
 		node := &TaskNode{
 			Name:        task.Name,
 			TaskRefName: task.TaskRef.Name,
 		}
 		graph.Nodes[task.Name] = node
-	}
 
-	// Add dependencies to each node
-	for _, task := range tasks {
-		node := graph.Nodes[task.Name]
+		// Add dependencies to the node
 		for _, dep := range task.RunAfter {
-			depNode := graph.Nodes[dep]
+			depNode, ok := graph.Nodes[dep]
+			if !ok {
+				// Create a new node for the dependency if it doesn't already exist
+				depNode = &TaskNode{
+					Name: dep,
+				}
+				graph.Nodes[dep] = depNode
+			}
 			node.Dependencies = append(node.Dependencies, depNode)
 		}
 	}
