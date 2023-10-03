@@ -13,7 +13,7 @@ BINARY_NAME=tkn-graph
 
 # Directories
 SRC_DIR=./cmd/graph
-BIN_DIR=./bin
+BIN_DIR=./dist
 
 # Build targets
 .PHONY: build
