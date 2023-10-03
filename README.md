@@ -153,39 +153,39 @@ By following these steps and customizing the flags, you can use the `tkn-graph` 
 title: python-3-8-release-create-build-release-1.2-review-rnwpq
 ---
 flowchart TD
-   fetch-repository("`fetch-repository
-   (git-clone)`") --> init-values("`init-values
-   (init-values)`")
-   fetch-repository("`fetch-repository
-   (git-clone)`") --> helm-docs("`helm-docs
-   (helm-docs)`")
-   compile("`compile
-   (python)`") --> test("`test
-   (python)`")
-   test("`test
-   (python)`") --> fetch-target-branch("`fetch-target-branch
-   (git-cli)`")
-   sonar-prepare-files("`sonar-prepare-files
-   (sonar-prepare-files-general)`") --> sonar("`sonar
-   (sonarqube-scanner)`")
-   sonar("`sonar
-   (sonarqube-scanner)`") --> dockerbuild-verify("`dockerbuild-verify
-   (dockerbuild-verify)`")
-   dockerfile-lint("`dockerfile-lint
-   (hadolint)`") --> dockerbuild-verify("`dockerbuild-verify
-   (dockerbuild-verify)`")
-   init-values("`init-values
-   (init-values)`") --> compile("`compile
-   (python)`")
-   fetch-target-branch("`fetch-target-branch
-   (git-cli)`") --> sonar-prepare-files("`sonar-prepare-files
-   (sonar-prepare-files-general)`")
-   fetch-repository("`fetch-repository
-   (git-clone)`") --> dockerfile-lint("`dockerfile-lint
-   (hadolint)`")
-   fetch-repository("`fetch-repository
-   (git-clone)`") --> helm-lint("`helm-lint
-   (helm-lint)`")
+   test("test
+   (python)") --> fetch-target-branch("fetch-target-branch
+   (git-cli)")
+   fetch-repository("fetch-repository
+   (git-clone)") --> helm-docs("helm-docs
+   (helm-docs)")
+   compile("compile
+   (python)") --> test("test
+   (python)")
+   fetch-repository("fetch-repository
+   (git-clone)") --> init-values("init-values
+   (init-values)")
+   init-values("init-values
+   (init-values)") --> compile("compile
+   (python)")
+   fetch-target-branch("fetch-target-branch
+   (git-cli)") --> sonar-prepare-files("sonar-prepare-files
+   (sonar-prepare-files-general)")
+   sonar-prepare-files("sonar-prepare-files
+   (sonar-prepare-files-general)") --> sonar("sonar
+   (sonarqube-scanner)")
+   fetch-repository("fetch-repository
+   (git-clone)") --> dockerfile-lint("dockerfile-lint
+   (hadolint)")
+   sonar("sonar
+   (sonarqube-scanner)") --> dockerbuild-verify("dockerbuild-verify
+   (dockerbuild-verify)")
+   dockerfile-lint("dockerfile-lint
+   (hadolint)") --> dockerbuild-verify("dockerbuild-verify
+   (dockerbuild-verify)")
+   fetch-repository("fetch-repository
+   (git-clone)") --> helm-lint("helm-lint
+   (helm-lint)")
 ```
 
 ## Contributing

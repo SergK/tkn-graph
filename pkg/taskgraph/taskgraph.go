@@ -172,7 +172,7 @@ func (g *TaskGraph) ToMermaidWithTaskRef() string {
 	mermaid := fmt.Sprintf("---\ntitle: %s\n---\nflowchart TD\n", g.PipelineName)
 	for _, node := range g.Nodes {
 		for _, dep := range node.Dependencies {
-			mermaid += fmt.Sprintf("   %s(\"`%s\n   (%s)`\") --> %s(\"`%s\n   (%s)`\")\n", dep.Name, dep.Name, dep.TaskRefName, node.Name, node.Name, node.TaskRefName)
+			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> %s(\"%s\n   (%s)\")\n", dep.Name, dep.Name, dep.TaskRefName, node.Name, node.Name, node.TaskRefName)
 		}
 	}
 	return mermaid
