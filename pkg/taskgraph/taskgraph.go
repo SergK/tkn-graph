@@ -1,4 +1,4 @@
-package main
+package taskgraph
 
 import (
 	"bytes"
@@ -26,8 +26,8 @@ type DOT struct {
 	Format string
 }
 
-// formatFunc is a function that generates the output format string for a TaskGraph
-type formatFuncType func(graph *TaskGraph, format string, withTaskRef bool) string
+// FormatFunc is a function that generates the output format string for a TaskGraph
+type FormatFuncType func(graph *TaskGraph, format string, withTaskRef bool) string
 
 // BuildTaskGraph creates a TaskGraph from a list of PipelineTasks
 func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
@@ -179,7 +179,7 @@ func (g *TaskGraph) ToMermaidWithTaskRef() string {
 }
 
 // formatFunc generates the output format string for a TaskGraph based on the specified format
-var formatFunc formatFuncType = func(graph *TaskGraph, format string, withTaskRef bool) string {
+var FormatFunc FormatFuncType = func(graph *TaskGraph, format string, withTaskRef bool) string {
 	switch strings.ToLower(format) {
 	case "dot":
 		if withTaskRef {

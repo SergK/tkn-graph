@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"tkn-graph/pkg/taskgraph"
 
 	"github.com/spf13/cobra"
 	"github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
@@ -67,7 +68,7 @@ func main() {
 			}
 
 			// Build the list of task graphs
-			var graphs []*TaskGraph
+			var graphs []*taskgraph.TaskGraph
 
 			switch options.ObjectKind {
 			case "Pipeline":
@@ -79,7 +80,7 @@ func main() {
 					log.Fatalf("No Pipelines found in namespace %s", options.Namespace)
 				}
 				for _, pipeline := range pipelines.Items {
-					graph := BuildTaskGraph(pipeline.Spec.Tasks)
+					graph := taskgraph.BuildTaskGraph(pipeline.Spec.Tasks)
 					graph.PipelineName = pipeline.Name
 					graphs = append(graphs, graph)
 				}
@@ -93,7 +94,7 @@ func main() {
 					log.Fatalf("No PipelineRuns found in namespace %s", options.Namespace)
 				}
 				for _, pipelineRun := range pipelineRuns.Items {
-					graph := BuildTaskGraph(pipelineRun.Status.PipelineSpec.Tasks)
+					graph := taskgraph.BuildTaskGraph(pipelineRun.Status.PipelineSpec.Tasks)
 					graph.PipelineName = pipelineRun.Name
 					graphs = append(graphs, graph)
 				}
@@ -105,7 +106,7 @@ func main() {
 			// Generate graph for each object
 			for _, graph := range graphs {
 				// Generate the output format string
-				output := formatFunc(graph, options.OutputFormat, options.WithTaskRef)
+				output := taskgraph.FormatFunc(graph, options.OutputFormat, options.WithTaskRef)
 
 				// Print or save the graph
 				if options.OutputDir == "" {

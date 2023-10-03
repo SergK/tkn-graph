@@ -6,11 +6,11 @@ GOLINT=golangci-lint run
 GOFMT=$(GOCMD) fmt
 
 # Binary name
-BINARY_NAME=myapp
+BINARY_NAME=tkn-graph
 
 # Directories
-SRC_DIR=.
-BIN_DIR=bin
+SRC_DIR=./cmd/graph
+BIN_DIR=./bin
 
 # Build targets
 .PHONY: build
@@ -20,17 +20,17 @@ build:
 # Test targets
 .PHONY: test
 test:
-	$(GOTEST) -v $(SRC_DIR)/...
+	$(GOTEST) -v ./...
 
 # Lint targets
 .PHONY: lint
 lint:
-	$(GOLINT) $(SRC_DIR)/...
+	$(GOLINT) ./...
 
 # Format targets
 .PHONY: fmt
 fmt:
-	$(GOFMT) $(SRC_DIR)/...
+	$(GOFMT) ./...
 
 # Clean targets
 .PHONY: clean
