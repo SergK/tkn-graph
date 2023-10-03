@@ -2,6 +2,7 @@
 # Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
+    - make clean
     - go mod tidy
 
 builds:
@@ -28,10 +29,14 @@ snapshot:
   name_template: "{{ incpatch .Version }}-snapshot"
 
 changelog:
+  use: github
   sort: asc
 
 release:
   name_template: 'v{{ .Version }}'
+  github:
+    owner: Sergk
+    name: tkn-graph
 
 # signs the checksum file
 # all files (including the sboms) are included in the checksum, so we don't need to sign each one if we don't want to
@@ -52,6 +57,9 @@ sboms:
 - artifacts: archive
 - id: source # Two different sbom configurations need two different IDs
   artifacts: source
+
+announce:
+  skip: true
 
 # modelines, feel free to remove those if you don't want/use them:
 # yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
