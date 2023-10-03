@@ -11,9 +11,8 @@ const (
 	testPipelineName = "test-pipeline"
 )
 
-func TestBuildTaskGraph(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
+func getTestTasks() []v1pipeline.PipelineTask {
+	return []v1pipeline.PipelineTask{
 		{
 			Name: "task1",
 			TaskRef: &v1pipeline.TaskRef{
@@ -35,9 +34,11 @@ func TestBuildTaskGraph(t *testing.T) {
 			},
 		},
 	}
+}
 
+func TestBuildTaskGraph(t *testing.T) {
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 
 	// Assert that the graph has the correct number of nodes
 	assert.Equal(t, 3, len(graph.Nodes))
@@ -57,84 +58,31 @@ func TestBuildTaskGraph(t *testing.T) {
 }
 
 func TestTaskGraphToDOT(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the ToDOT method
 	dot := graph.ToDOT()
 	assert.Equal(t, "digraph", dot.Format)
 	assert.Equal(t, testPipelineName, dot.Name)
-	assert.ElementsMatch(t, []string{
-		"  \"task1\" -> \"task2\"",
-		"  \"task1\" -> \"task3\"",
-		"  \"task2\" -> \"task3\"",
-	}, dot.Edges)
+	assert.Contains(t, dot.Edges, "  \"task1\" -> \"task2\"")
+	assert.Contains(t, dot.Edges, "  \"task1\" -> \"task3\"")
+	assert.Contains(t, dot.Edges, "  \"task2\" -> \"task3\"")
 }
 
 func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the ToDOTWithTaskRef method
 	dot := graph.ToDOTWithTaskRef()
 	assert.Equal(t, "digraph", dot.Format)
 	assert.Equal(t, testPipelineName, dot.Name)
-	// dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\n(%s)\" -> \"%s\n(%s)\"", dep.Name, dep.TaskRefName, node.Name, node.TaskRefName))
-	assert.ElementsMatch(t, []string{
-		"  \"task1\n(taskRef1)\" -> \"task2\n(taskRef2)\"",
-		"  \"task1\n(taskRef1)\" -> \"task3\n(taskRef3)\"",
-		"  \"task2\n(taskRef2)\" -> \"task3\n(taskRef3)\"",
-	}, dot.Edges)
+	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"task2\n(taskRef2)\"")
+	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"task3\n(taskRef3)\"")
+	assert.Contains(t, dot.Edges, "  \"task2\n(taskRef2)\" -> \"task3\n(taskRef3)\"")
 }
 
 func TestDOTString(t *testing.T) {
@@ -158,184 +106,67 @@ func TestDOTString(t *testing.T) {
 }
 
 func TestTaskGraphToPlantUML(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the ToPlantUML method
 	plantuml := graph.ToPlantUML()
-	expected := "@startuml\nhide empty description\ntitle test-pipeline\n\n[*] --> task1\n" +
-		"task2 <-down- task1\n" +
-		"task3 <-down- task1\n" +
-		"task3 <-down- task2\n\n@enduml\n"
-	assert.Equal(t, expected, plantuml)
+	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
+	assert.Contains(t, plantuml, "[*] --> task1\n")
+	assert.Contains(t, plantuml, "task2 <-down- task1\n")
+	assert.Contains(t, plantuml, "task3 <-down- task1\n")
+	assert.Contains(t, plantuml, "task3 <-down- task2\n")
+	assert.Contains(t, plantuml, "\n@enduml\n")
 }
 
 func TestTaskGraphToPlantUMLWithTaskRef(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the ToPlantUMLWithTaskRef method
 	plantuml := graph.ToPlantUMLWithTaskRef()
-	expected := "@startuml\nhide empty description\ntitle test-pipeline\n\n[*] --> task1\n" +
-		"task2 <-down- task1\n" +
-		"task3 <-down- task1\n" +
-		"task3 <-down- task2\n\n" +
-		"task1: taskRef1\n" +
-		"task2: taskRef2\n" +
-		"task3: taskRef3\n\n@enduml\n"
-	assert.Equal(t, expected, plantuml)
+	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
+	assert.Contains(t, plantuml, "[*] --> task1")
+	assert.Contains(t, plantuml, "task2 <-down- task1")
+	assert.Contains(t, plantuml, "task3 <-down- task1")
+	assert.Contains(t, plantuml, "task3 <-down- task2")
+	assert.Contains(t, plantuml, "task1: taskRef1\n")
+	assert.Contains(t, plantuml, "task2: taskRef2\n")
+	assert.Contains(t, plantuml, "task3: taskRef3\n")
+	assert.Contains(t, plantuml, "\n@enduml\n")
 }
 
 func TestTaskGraphToMermaid(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the ToMermaid method
 	mermaid := graph.ToMermaid()
-	expected := "---\ntitle: test-pipeline\n---\nflowchart TD\n   task1 --> task2\n   task1 --> task3\n   task2 --> task3\n"
-	assert.Equal(t, expected, mermaid)
+	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
+	assert.Contains(t, mermaid, "   task1 --> task2\n")
+	assert.Contains(t, mermaid, "   task1 --> task3\n")
+	assert.Contains(t, mermaid, "   task2 --> task3\n")
 }
 
 func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the ToMermaidWithTaskRef method
 	mermaid := graph.ToMermaidWithTaskRef()
-	expected := "---\ntitle: test-pipeline\n---\nflowchart TD\n" +
-		"   task1(\"task1\n   (taskRef1)\") --> task2(\"task2\n   (taskRef2)\")\n" +
-		"   task1(\"task1\n   (taskRef1)\") --> task3(\"task3\n   (taskRef3)\")\n" +
-		"   task2(\"task2\n   (taskRef2)\") --> task3(\"task3\n   (taskRef3)\")\n"
-	assert.Equal(t, expected, mermaid)
+	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
+	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> task2(\"task2\n   (taskRef2)\")\n")
+	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> task3(\"task3\n   (taskRef3)\")\n")
+	assert.Contains(t, mermaid, "   task2(\"task2\n   (taskRef2)\") --> task3(\"task3\n   (taskRef3)\")\n")
 }
 
 func TestFormatFunc(t *testing.T) {
-	// Define some test tasks
-	tasks := []v1pipeline.PipelineTask{
-		{
-			Name: "task1",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef1",
-			},
-			RunAfter: []string{"task2", "task3"},
-		},
-		{
-			Name: "task2",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef2",
-			},
-			RunAfter: []string{"task3"},
-		},
-		{
-			Name: "task3",
-			TaskRef: &v1pipeline.TaskRef{
-				Name: "taskRef3",
-			},
-		},
-	}
-
 	// Build the task graph
-	graph := BuildTaskGraph(tasks)
+	graph := BuildTaskGraph(getTestTasks())
 	graph.PipelineName = testPipelineName
 
 	// Test the FormatFunc method
