@@ -4,6 +4,7 @@ GOBUILD=$(GOCMD) build
 GOTEST=$(GOCMD) test
 GOLINT=golangci-lint run
 GOFMT=$(GOCMD) fmt
+GOVET=$(GOCMD) vet
 
 # Binary name
 BINARY_NAME=tkn-graph
@@ -34,6 +35,10 @@ lint: ## run linter
 fmt: ## run gofmt
 	$(GOFMT) ./...
 
+.PHONY: vet
+vet:  ## Run go vet
+	$(GOVET) ./...
+
 # Clean targets
 .PHONY: clean
 clean: ## remove the binary
@@ -41,7 +46,7 @@ clean: ## remove the binary
 
 # make CI run all targets
 .PHONY: all
-all: lint test fmt build ## run all targets: lint test fmt build
+all: lint test fmt vet build ## run all targets: lint test fmt build
 
 # Help target
 .PHONY: help
