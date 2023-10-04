@@ -1,4 +1,6 @@
-# Tekton Graph
+[![Release Version](https://img.shields.io/github/v/release/sergk/tkn-graph?label=tkn-graph)](https://github.com/sergk/tkn-graph/releases/latest)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sergk_tkn-graph&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sergk_tkn-graph)
+[![Go Report Card](https://goreportcard.com/badge/github.com/sergk/tkn-graph)](https://goreportcard.com/report/github.com/sergk/tkn-graph)
 
 <!-- TOC -->
 
@@ -14,7 +16,9 @@
 
 <!-- /TOC -->
 
-The provided Go program is a command-line tool named `tkn-graph` for generating graphs from Tekton objects. This tool is used to visualize the structure and relationships of Tekton `Pipelines` and `PipelineRuns` by creating graphical representations of their tasks.
+# Tekton Graph
+
+The provided Go program is a command-line tool named `tkn-graph` for generating graphs from Tekton Customer Resources: `Pipeline` and `PipelineRun`. This tool is used to visualize the structure and relationships between tasks of Tekton `Pipelines` and `PipelineRuns` by creating output in [PlantUML](https://plantuml.com/), [Mermaid](https://mermaid.js.org/) and [Dot (GraphViz)](https://graphviz.org/doc/info/lang.html).
 
 ## Prerequisites
 
@@ -28,9 +32,11 @@ Before using the `tkn-graph` tool, you should ensure you have the following prer
 
 ## Installation
 
-To install the project, you need to have Go installed on your system. You can download and install Go from the official [website](https://golang.org/dl/).
+Download the latest binary from the [releases page](https://github.com/sergk/tkn-graph/releases/latest)
 
-Once you have Go installed, you can build the project using the following command:
+or building locally:
+
+You need to have Go installed on your system. Once you have Go installed, you can build the project using the following command:
 
 ```bash
 make build
