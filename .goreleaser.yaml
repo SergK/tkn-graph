@@ -13,6 +13,11 @@ builds:
     - linux
     - windows
     - darwin
+  goarch:
+    - amd64
+    - arm64
+    - s390x
+    - ppc64le
   mod_timestamp: '{{ .CommitTimestamp }}'
   flags:
     # trims path
@@ -22,8 +27,21 @@ builds:
     # only needed if you actually use those things in your main package, otherwise can be ignored.
     - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }}
 
+archives:
+- name_template: >-
+    {{- .Binary }}_
+    {{- .Version }}_
+    {{- title .Os }}_
+    {{- if eq .Arch "amd64" }}x86_64
+    {{- else if eq .Arch "386" }}i386
+    {{- else if eq .Arch "arm64" }}aarch64
+    {{- else }}{{ .Arch }}{{ end }}
+  format_overrides:
+    - goos: windows
+      format: zip
+
 checksum:
-  name_template: "{{ .ProjectName }}_checksums.txt"
+  name_template: "checksums.txt"
 
 snapshot:
   name_template: "{{ incpatch .Version }}-snapshot"
@@ -53,9 +71,10 @@ changelog:
       order: 999
   filters:
     exclude:
+      - '^docs:'
       - '^test:'
-      - '^.*?Bump(\([[:word:]]+\))?.+$'
-      - '^.*?[Bot](\([[:word:]]+\))?.+$'
+      - Merge pull request
+      - Merge branch
 
 release:
   name_template: 'v{{ .Version }}'

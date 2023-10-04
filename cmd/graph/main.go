@@ -1,23 +1,19 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 
+	"github.com/sergk/tkn-graph/pkg/client"
 	"github.com/sergk/tkn-graph/pkg/taskgraph"
 	"github.com/spf13/cobra"
-	"github.com/tektoncd/pipeline/pkg/client/clientset/versioned"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 type Options struct {
 	Namespace    string
-	ObjectKind   string
+	TektonKind   string
 	OutputFormat string
 	OutputDir    string
 	WithTaskRef  bool
@@ -28,41 +24,24 @@ func main() {
 
 	// Define the root command
 	rootCmd := &cobra.Command{
-		Use:   "graph",
+		Use:   "tkn-graph",
 		Short: "Generate a graph of a Tekton object",
-		Long:  "graph is a command-line tool for generating graphs from Tekton kind: Pipelines and kind: PipelineRuns.",
+		Long:  "tkn-graph is a command-line tool for generating graphs from Tekton kind: Pipelines and kind: PipelineRuns.",
 		Example: `  graph --namespace my-namespace --kind Pipeline --output-format dot
   graph --namespace my-namespace --kind PipelineRun --output-format puml
   graph --namespace my-namespace --kind Pipeline --output-format mmd --output-dir /tmp/output`,
 		Run: func(cmd *cobra.Command, args []string) {
 			// Create the Kubernetes client
-			config, err := rest.InClusterConfig()
-			if err != nil {
-				kubeconfig := os.Getenv("KUBECONFIG")
-				if kubeconfig == "" {
-					kubeconfig = clientcmd.RecommendedHomeFile
-				}
-				config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-				if err != nil {
-					log.Fatalf("Failed to get Kubernetes configuration: %v", err)
-				}
-			}
-			tektonClient, err := versioned.NewForConfig(config)
+			tektonClient, err := client.NewClient()
 			if err != nil {
 				log.Fatalf("Failed to create Tekton client: %v", err)
 			}
 
 			// Get the namespace to use
 			if options.Namespace == "" {
-				namespace, _, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-					clientcmd.NewDefaultClientConfigLoadingRules(),
-					&clientcmd.ConfigOverrides{},
-				).Namespace()
+				namespace, err := tektonClient.GetNamespace()
 				if err != nil {
-					log.Fatalf("Failed to get namespace from kubeconfig: %v", err)
-				}
-				if namespace == "" {
-					namespace = "default"
+					log.Fatalf("Failed to get namespace: %v", err)
 				}
 				options.Namespace = namespace
 			}
@@ -70,39 +49,33 @@ func main() {
 			// Build the list of task graphs
 			var graphs []*taskgraph.TaskGraph
 
-			switch options.ObjectKind {
+			switch options.TektonKind {
 			case "Pipeline":
-				pipelines, err := tektonClient.TektonV1().Pipelines(options.Namespace).List(context.TODO(), v1.ListOptions{})
+				pipelines, err := tektonClient.GetPipelines(options.Namespace)
 				if err != nil {
 					log.Fatalf("Failed to get Pipelines: %v", err)
 				}
-				if len(pipelines.Items) == 0 {
-					log.Fatalf("No Pipelines found in namespace %s", options.Namespace)
-				}
-				for i := range pipelines.Items {
-					pipeline := &pipelines.Items[i]
+				for i := range pipelines {
+					pipeline := &pipelines[i]
 					graph := taskgraph.BuildTaskGraph(pipeline.Spec.Tasks)
 					graph.PipelineName = pipeline.Name
 					graphs = append(graphs, graph)
 				}
 
 			case "PipelineRun":
-				pipelineRuns, err := tektonClient.TektonV1().PipelineRuns(options.Namespace).List(context.TODO(), v1.ListOptions{})
+				pipelineRuns, err := tektonClient.GetPipelineRuns(options.Namespace)
 				if err != nil {
 					log.Fatalf("Failed to get PipelineRuns: %v", err)
 				}
-				if len(pipelineRuns.Items) == 0 {
-					log.Fatalf("No PipelineRuns found in namespace %s", options.Namespace)
-				}
-				for i := range pipelineRuns.Items {
-					pipelineRun := &pipelineRuns.Items[i]
+				for i := range pipelineRuns {
+					pipelineRun := &pipelineRuns[i]
 					graph := taskgraph.BuildTaskGraph(pipelineRun.Status.PipelineSpec.Tasks)
 					graph.PipelineName = pipelineRun.Name
 					graphs = append(graphs, graph)
 				}
 
 			default:
-				log.Fatalf("Invalid kind type: %s", options.ObjectKind)
+				log.Fatalf("Invalid kind type: %s", options.TektonKind)
 			}
 
 			// Generate graph for each object
@@ -137,7 +110,7 @@ func main() {
 	rootCmd.Flags().StringVar(
 		&options.Namespace, "namespace", "", "the Kubernetes namespace to use. Will try to get namespace from KUBECONFIG if not specified then fallback to 'default'")
 	rootCmd.Flags().StringVar(
-		&options.ObjectKind, "kind", "Pipeline", "the kind of the Tekton object to parse (Pipeline or PipelineRun)")
+		&options.TektonKind, "kind", "Pipeline", "the kind of the Tekton object to parse (Pipeline or PipelineRun)")
 	rootCmd.Flags().StringVar(
 		&options.OutputFormat, "output-format", "dot", "the output format (dot - DOT, puml - PlantUML or mmd - Mermaid)")
 	rootCmd.Flags().StringVar(
