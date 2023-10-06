@@ -33,6 +33,13 @@ func getTestTasks() []v1pipeline.PipelineTask {
 				Name: "taskRef3",
 			},
 		},
+		// we can have task without any dependencies
+		{
+			Name: "task4",
+			TaskRef: &v1pipeline.TaskRef{
+				Name: "taskRef4",
+			},
+		},
 	}
 }
 
@@ -41,7 +48,7 @@ func TestBuildTaskGraph(t *testing.T) {
 	graph := BuildTaskGraph(getTestTasks())
 
 	// Assert that the graph has the correct number of nodes
-	assert.Equal(t, 3, len(graph.Nodes))
+	assert.Equal(t, 4, len(graph.Nodes))
 
 	// Assert that the nodes have the correct names and task references
 	assert.Equal(t, "taskRef1", graph.Nodes["task1"].TaskRefName)
@@ -66,9 +73,11 @@ func TestTaskGraphToDOT(t *testing.T) {
 	dot := graph.ToDOT()
 	assert.Equal(t, "digraph", dot.Format)
 	assert.Equal(t, testPipelineName, dot.Name)
-	assert.Contains(t, dot.Edges, "  \"task1\" -> \"task2\"")
-	assert.Contains(t, dot.Edges, "  \"task1\" -> \"task3\"")
-	assert.Contains(t, dot.Edges, "  \"task2\" -> \"task3\"")
+	assert.Contains(t, dot.Edges, "  \"task2\" -> \"task1\"")
+	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task1\"")
+	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task2\"")
+	assert.Contains(t, dot.Edges, "  \"task1\" -> \"end\"")
+	assert.Contains(t, dot.Edges, "  \"task4\" -> \"end\"")
 }
 
 func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
@@ -80,9 +89,11 @@ func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
 	dot := graph.ToDOTWithTaskRef()
 	assert.Equal(t, "digraph", dot.Format)
 	assert.Equal(t, testPipelineName, dot.Name)
-	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"task2\n(taskRef2)\"")
-	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"task3\n(taskRef3)\"")
-	assert.Contains(t, dot.Edges, "  \"task2\n(taskRef2)\" -> \"task3\n(taskRef3)\"")
+	assert.Contains(t, dot.Edges, "  \"task2\n(taskRef2)\" -> \"task1\n(taskRef1)\"")
+	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task1\n(taskRef1)\"")
+	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task2\n(taskRef2)\"")
+	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"end\"")
+	assert.Contains(t, dot.Edges, "  \"task4\n(taskRef4)\" -> \"end\"")
 }
 
 func TestDOTString(t *testing.T) {
@@ -101,7 +112,7 @@ func TestDOTString(t *testing.T) {
 	}
 
 	// Test the String method
-	expected := "digraph {\n  labelloc=\"t\"\n  label=\"test-pipeline\"\n  \"task1\" -> \"task2\"\n  \"task1\" -> \"task3\"\n  \"task2\" -> \"task3\"\n}\n"
+	expected := "digraph {\n  labelloc=\"t\"\n  label=\"test-pipeline\"\n  end [shape=\"point\" width=0.2]\n  \"task1\" -> \"task2\"\n  \"task1\" -> \"task3\"\n  \"task2\" -> \"task3\"\n}\n"
 	assert.Equal(t, expected, dot.String())
 }
 
@@ -113,10 +124,11 @@ func TestTaskGraphToPlantUML(t *testing.T) {
 	// Test the ToPlantUML method
 	plantuml := graph.ToPlantUML()
 	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
-	assert.Contains(t, plantuml, "[*] --> task1\n")
-	assert.Contains(t, plantuml, "task2 <-down- task1\n")
-	assert.Contains(t, plantuml, "task3 <-down- task1\n")
-	assert.Contains(t, plantuml, "task3 <-down- task2\n")
+	assert.Contains(t, plantuml, "task1 --> [*]\n")
+	assert.Contains(t, plantuml, "task4 --> [*]\n")
+	assert.Contains(t, plantuml, "task2 -down-> task1\n")
+	assert.Contains(t, plantuml, "task3 -down-> task1\n")
+	assert.Contains(t, plantuml, "task3 -down-> task2\n")
 	assert.Contains(t, plantuml, "\n@enduml\n")
 }
 
@@ -128,10 +140,11 @@ func TestTaskGraphToPlantUMLWithTaskRef(t *testing.T) {
 	// Test the ToPlantUMLWithTaskRef method
 	plantuml := graph.ToPlantUMLWithTaskRef()
 	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
-	assert.Contains(t, plantuml, "[*] --> task1")
-	assert.Contains(t, plantuml, "task2 <-down- task1")
-	assert.Contains(t, plantuml, "task3 <-down- task1")
-	assert.Contains(t, plantuml, "task3 <-down- task2")
+	assert.Contains(t, plantuml, "task1 --> [*]")
+	assert.Contains(t, plantuml, "task4 --> [*]")
+	assert.Contains(t, plantuml, "task2 -down-> task1")
+	assert.Contains(t, plantuml, "task3 -down-> task1")
+	assert.Contains(t, plantuml, "task3 -down-> task2")
 	assert.Contains(t, plantuml, "task1: taskRef1\n")
 	assert.Contains(t, plantuml, "task2: taskRef2\n")
 	assert.Contains(t, plantuml, "task3: taskRef3\n")
@@ -146,9 +159,11 @@ func TestTaskGraphToMermaid(t *testing.T) {
 	// Test the ToMermaid method
 	mermaid := graph.ToMermaid()
 	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
-	assert.Contains(t, mermaid, "   task1 --> task2\n")
-	assert.Contains(t, mermaid, "   task1 --> task3\n")
-	assert.Contains(t, mermaid, "   task2 --> task3\n")
+	assert.Contains(t, mermaid, "   task2 --> task1\n")
+	assert.Contains(t, mermaid, "   task3 --> task1\n")
+	assert.Contains(t, mermaid, "   task3 --> task2\n")
+	assert.Contains(t, mermaid, "   task1 --> id([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task4 --> id([fa:fa-circle])\n")
 }
 
 func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
@@ -159,9 +174,11 @@ func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
 	// Test the ToMermaidWithTaskRef method
 	mermaid := graph.ToMermaidWithTaskRef()
 	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
-	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> task2(\"task2\n   (taskRef2)\")\n")
-	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> task3(\"task3\n   (taskRef3)\")\n")
-	assert.Contains(t, mermaid, "   task2(\"task2\n   (taskRef2)\") --> task3(\"task3\n   (taskRef3)\")\n")
+	assert.Contains(t, mermaid, "   task2(\"task2\n   (taskRef2)\") --> task1(\"task1\n   (taskRef1)\")\n")
+	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task1(\"task1\n   (taskRef1)\")\n")
+	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task2(\"task2\n   (taskRef2)\")\n")
+	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> id([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task4(\"task4\n   (taskRef4)\") --> id([fa:fa-circle])\n")
 }
 
 func TestFormatFunc(t *testing.T) {
@@ -170,20 +187,71 @@ func TestFormatFunc(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the FormatFunc method
-	dot, err := FormatFunc(graph, "dot", false)
+	dot, err := formatFunc(graph, "dot", false)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, dot)
 
-	puml, err := FormatFunc(graph, "puml", false)
+	puml, err := formatFunc(graph, "puml", false)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, puml)
 
-	mmd, err := FormatFunc(graph, "mmd", false)
+	mmd, err := formatFunc(graph, "mmd", false)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, mmd)
 
-	invalid, err := FormatFunc(graph, "invalid", false)
+	invalid, err := formatFunc(graph, "invalid", false)
 	assert.Error(t, err)
 	assert.Empty(t, invalid)
 	assert.Equal(t, "Invalid output format: invalid", err.Error())
+}
+
+func TestPrintAllGraphs(t *testing.T) {
+	// Create a test graph
+	testGraph := &TaskGraph{
+		Nodes: map[string]*TaskNode{
+			"task1": {
+				Name:        "task1",
+				TaskRefName: "taskRef1",
+				Dependencies: []*TaskNode{
+					{
+						Name:        "task2",
+						TaskRefName: "taskRef2",
+					},
+				},
+			},
+			"task2": {
+				Name:        "task2",
+				TaskRefName: "taskRef2",
+				Dependencies: []*TaskNode{
+					{
+						Name:        "task3",
+						TaskRefName: "taskRef3",
+					},
+				},
+			},
+		},
+	}
+
+	// Create a test output format and withTaskRef value
+	testOutputFormat := "dot"
+	testWithTaskRef := true
+
+	// Test the PrintAllGraphs method
+	err := PrintAllGraphs([]*TaskGraph{testGraph}, testOutputFormat, testWithTaskRef)
+	assert.NoError(t, err)
+}
+
+func TestPrintAllGraphsWithUnsupportedFormat(t *testing.T) {
+	// Create a test graph
+	testGraph := &TaskGraph{}
+
+	// Create a test output format and withTaskRef value
+	testOutputFormat := "FAIL"
+	testWithTaskRef := true
+
+	// Test the PrintAllGraphs method
+	err := PrintAllGraphs([]*TaskGraph{testGraph}, testOutputFormat, testWithTaskRef)
+	assert.Error(t, err)
+	// contains error message
+	assert.Contains(t, err.Error(), "Invalid output format: FAIL")
 }

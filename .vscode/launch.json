@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["--namespace", "edp-delivery-tekton-dev", "--kind", "PipelineRun", "--output-format", "dot"],
+            "args": ["pipelinerun", "graph", "--namespace", "edp-delivery-tekton-dev", "--output-format", "mmd"],
             "cwd": "${workspaceFolder}"
         }
     ]
