@@ -3,6 +3,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/sergk/tkn-graph/pkg/cli/prerun"
 	pipelinepkg "github.com/sergk/tkn-graph/pkg/pipeline"
 	"github.com/sergk/tkn-graph/pkg/taskgraph"
 	"github.com/spf13/cobra"
@@ -34,6 +35,9 @@ func graphCommand(p cli.Params) *cobra.Command {
 				return err
 			}
 			return nil
+		},
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return prerun.ValidateGraphPreRunE(opts.OutputFormat)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cs, err := p.Clients()

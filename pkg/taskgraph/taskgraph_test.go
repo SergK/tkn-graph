@@ -1,6 +1,8 @@
 package taskgraph
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -254,4 +256,76 @@ func TestPrintAllGraphsWithUnsupportedFormat(t *testing.T) {
 	assert.Error(t, err)
 	// contains error message
 	assert.Contains(t, err.Error(), "Invalid output format: FAIL")
+}
+
+func TestWriteAllGraphs(t *testing.T) {
+	// Create a temporary directory for testing
+	tempDir, err := os.MkdirTemp("", "test-output")
+	if err != nil {
+		t.Fatalf("Failed to create temporary directory: %v", err)
+	}
+
+	defer func() {
+		// Remove the temporary directory and check for errors
+		if err = os.RemoveAll(tempDir); err != nil {
+			t.Errorf("Failed to remove temporary directory: %v", err)
+		}
+	}()
+
+	// Create a test graph
+	testGraph := &TaskGraph{
+		PipelineName: "test-pipeline",
+		Nodes: map[string]*TaskNode{
+			"task1": {
+				Name:        "task1",
+				TaskRefName: "taskRef1",
+				Dependencies: []*TaskNode{
+					{
+						Name:        "task2",
+						TaskRefName: "taskRef2",
+					},
+				},
+			},
+			"task2": {
+				Name:        "task2",
+				TaskRefName: "taskRef2",
+				Dependencies: []*TaskNode{
+					{
+						Name:        "task3",
+						TaskRefName: "taskRef3",
+					},
+				},
+			},
+			"task3": {
+				Name:        "task3",
+				TaskRefName: "taskRef3",
+				Dependencies: []*TaskNode{
+					{
+						Name:        "task4",
+						TaskRefName: "taskRef4",
+					},
+				},
+			},
+			"task4": {
+				Name:        "task4",
+				TaskRefName: "taskRef4",
+			},
+		},
+	}
+
+	// Write the test graph to all supported formats
+	err = WriteAllGraphs([]*TaskGraph{testGraph}, "dot", tempDir, false)
+	assert.NoError(t, err)
+	err = WriteAllGraphs([]*TaskGraph{testGraph}, "puml", tempDir, false)
+	assert.NoError(t, err)
+	err = WriteAllGraphs([]*TaskGraph{testGraph}, "mmd", tempDir, false)
+	assert.NoError(t, err)
+
+	// Check that the files were created
+	_, err = os.Stat(filepath.Join(tempDir, "test-pipeline.dot"))
+	assert.NoError(t, err)
+	_, err = os.Stat(filepath.Join(tempDir, "test-pipeline.puml"))
+	assert.NoError(t, err)
+	_, err = os.Stat(filepath.Join(tempDir, "test-pipeline.mmd"))
+	assert.NoError(t, err)
 }
