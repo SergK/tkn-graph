@@ -51,31 +51,24 @@ The `tkn-graph` tool has several command-line options and can generate different
 Execute the `tkn-graph` tool from the command line with the following syntax:
 
 ```bash
-  tkn-graph --help
-  graph is a command-line tool for generating graphs from Tekton kind: Pipelines and kind: PipelineRuns.
+tkn-graph is a command-line tool for generating graphs from Tekton Pipelines and PipelineRuns.
 
-  Usage:
-    graph [flags]
+Usage:
+  tkn-graph [command]
 
-  Examples:
-    graph --namespace my-namespace --kind Pipeline --output-format dot
-    graph --namespace my-namespace --kind PipelineRun --output-format puml
-    graph --namespace my-namespace --kind Pipeline --output-format mmd --output-dir /tmp/output
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  help        Help about any command
+  pipeline    Graph pipelines
+  pipelinerun Graph PipelineRuns
 
-  Flags:
-    -h, --help                   help for graph
-        --kind string            the kind of the Tekton object to parse (Pipeline or PipelineRun) (default "Pipeline")
-        --namespace string       the Kubernetes namespace to use. Will try to get namespace from KUBECONFIG if not specified then fallback to 'default'
-        --output-dir string      the directory to save the output files. Otherwise, the output is printed to the screen
-        --output-format string   the output format (dot - DOT, puml - PlantUML or mmd - Mermaid) (default "dot")
-        --with-task-ref          Include TaskRefName information in the output
+Flags:
+  -h, --help   help for tkn-graph
+
+Use "tkn-graph [command] --help" for more information about a command.
 ```
 
 The `[flags]` correspond to various options and arguments that you can provide to customize the tool's behavior. Here are the available flags:
-
-- `--namespace` (string, optional): Specify the Kubernetes namespace you want to work in. If not provided, the tool will try to get the namespace from your kubeconfig. If it can't determine the namespace from there, it will default to "default"
-
-- `--kind` (string, optional): Specify the kind of Tekton object you want to visualize. It can be "Pipeline" or "PipelineRun." The default value is "Pipeline"
 
 - `--output-format` (string, optional): Choose the output format for the graph. You can use "dot" for DOT, "puml" for PlantUML, or "mmd" for Mermaid. The default format is "dot"
 
@@ -90,29 +83,34 @@ The `tkn-graph` tool is flexible and can be customized to meet your specific nee
 - Generate a DOT format graph for Pipelines in the "my-namespace" namespace and print it to the screen:
 
   ```bash
-  tkn-graph --namespace my-namespace --kind Pipeline --output-format dot
+  $ tkn-graph pipelinerun graph --namespace my-namespace --output-format dot
 
   digraph {
     labelloc="t"
-    label="python-3-8-release-create-build-release-1.2-review-rnwpq"
+    label="python-3-8-release-create-build-release-1.2-review-srrcc"
+    end [shape="point" width=0.2]
+    "fetch-target-branch" -> "sonar-prepare-files"
+    "helm-lint" -> "end"
+    "fetch-repository" -> "init-values"
+    "fetch-repository" -> "helm-docs"
+    "fetch-repository" -> "dockerfile-lint"
     "fetch-repository" -> "helm-lint"
     "init-values" -> "compile"
     "test" -> "fetch-target-branch"
     "sonar-prepare-files" -> "sonar"
-    "fetch-repository" -> "dockerfile-lint"
     "sonar" -> "dockerbuild-verify"
     "dockerfile-lint" -> "dockerbuild-verify"
-    "fetch-repository" -> "init-values"
-    "fetch-repository" -> "helm-docs"
+    "dockerbuild-verify" -> "end"
+    "gerrit-notify" -> "end"
+    "helm-docs" -> "end"
     "compile" -> "test"
-    "fetch-target-branch" -> "sonar-prepare-files"
   }
   ```
 
 - Generate a PlantUML format graph for PipelineRuns in the "my-namespace" namespace and save it to a file:
 
   ```bash
-  $ tkn-graph --namespace my-namespace --kind PipelineRun --output-format puml --output-dir output
+  $ tkn-graph pipelinerun graph --namespace my-namespace --output-format puml --output-dir output
 
   $ ls -1 output
 
@@ -153,45 +151,60 @@ The `tkn-graph` tool is flexible and can be customized to meet your specific nee
 - Generate a Mermaid format graph with TaskRef for Pipelines in the "my-namespace" namespace and save it to a file:
 
   ```bash
-  tkn-graph --namespace my-namespace --kind Pipeline --output-format mmd --with-task-ref
+  $ tkn-graph pipeline graph --namespace edp-delivery-tekton-dev --output-format mmd --with-task-ref
 
   ---
-  title: python-3-8-release-create-build-release-1.2-review-rnwpq
+  title: gerrit-python-python-3.8-app-build-edp
   ---
   flowchart TD
-    test("test
-    (python)") --> fetch-target-branch("fetch-target-branch
+    kaniko-build("kaniko-build
+    (kaniko)") --> git-tag("git-tag
     (git-cli)")
-    fetch-repository("fetch-repository
-    (git-clone)") --> helm-docs("helm-docs
-    (helm-docs)")
+    git-tag("git-tag
+    (git-cli)") --> update-cbis("update-cbis
+    (update-cbis)")
+    get-version("get-version
+    (get-version-edp)") --> update-build-number("update-build-number
+    (update-build-number-python)")
+    sonar-cleanup("sonar-cleanup
+    (sonar-cleanup)") --> id([fa:fa-circle])
     compile("compile
     (python)") --> test("test
     (python)")
+    push("push
+    (python)") --> kaniko-build("kaniko-build
+    (kaniko)")
+    get-nexus-repository-url("get-nexus-repository-url
+    (get-nexus-repository-url)") --> push("push
+    (python)")
+    update-cbis("update-cbis
+    (update-cbis)") --> id([fa:fa-circle])
+    init-values("init-values
+    (init-values)") --> get-version("get-version
+    (get-version-edp)")
+    init-values("init-values
+    (init-values)") --> sonar-cleanup("sonar-cleanup
+    (sonar-cleanup)")
+    update-build-number("update-build-number
+    (update-build-number-python)") --> sast("sast
+    (sast)")
+    sonar("sonar
+    (sonarqube-scanner)") --> get-nexus-repository-url("get-nexus-repository-url
+    (get-nexus-repository-url)")
+    fetch-repository("fetch-repository
+    (git-clone)") --> gerrit-notify("gerrit-notify
+    (gerrit-ssh-cmd)")
     fetch-repository("fetch-repository
     (git-clone)") --> init-values("init-values
     (init-values)")
-    init-values("init-values
-    (init-values)") --> compile("compile
+    gerrit-notify("gerrit-notify
+    (gerrit-ssh-cmd)") --> id([fa:fa-circle])
+    sast("sast
+    (sast)") --> compile("compile
     (python)")
-    fetch-target-branch("fetch-target-branch
-    (git-cli)") --> sonar-prepare-files("sonar-prepare-files
-    (sonar-prepare-files-general)")
-    sonar-prepare-files("sonar-prepare-files
-    (sonar-prepare-files-general)") --> sonar("sonar
+    test("test
+    (python)") --> sonar("sonar
     (sonarqube-scanner)")
-    fetch-repository("fetch-repository
-    (git-clone)") --> dockerfile-lint("dockerfile-lint
-    (hadolint)")
-    sonar("sonar
-    (sonarqube-scanner)") --> dockerbuild-verify("dockerbuild-verify
-    (dockerbuild-verify)")
-    dockerfile-lint("dockerfile-lint
-    (hadolint)") --> dockerbuild-verify("dockerbuild-verify
-    (dockerbuild-verify)")
-    fetch-repository("fetch-repository
-    (git-clone)") --> helm-lint("helm-lint
-    (helm-lint)")
   ```
 
 ### Output
@@ -205,42 +218,57 @@ By following these steps and customizing the flags, you can use the `tkn-graph` 
 
 ```mermaid
 ---
-title: python-3-8-release-create-build-release-1.2-review-rnwpq
+title: gerrit-python-python-3.8-app-build-edp
 ---
 flowchart TD
-   test("test
-   (python)") --> fetch-target-branch("fetch-target-branch
+   kaniko-build("kaniko-build
+   (kaniko)") --> git-tag("git-tag
    (git-cli)")
-   fetch-repository("fetch-repository
-   (git-clone)") --> helm-docs("helm-docs
-   (helm-docs)")
+   git-tag("git-tag
+   (git-cli)") --> update-cbis("update-cbis
+   (update-cbis)")
+   get-version("get-version
+   (get-version-edp)") --> update-build-number("update-build-number
+   (update-build-number-python)")
+   sonar-cleanup("sonar-cleanup
+   (sonar-cleanup)") --> id([fa:fa-circle])
    compile("compile
    (python)") --> test("test
    (python)")
+   push("push
+   (python)") --> kaniko-build("kaniko-build
+   (kaniko)")
+   get-nexus-repository-url("get-nexus-repository-url
+   (get-nexus-repository-url)") --> push("push
+   (python)")
+   update-cbis("update-cbis
+   (update-cbis)") --> id([fa:fa-circle])
+   init-values("init-values
+   (init-values)") --> get-version("get-version
+   (get-version-edp)")
+   init-values("init-values
+   (init-values)") --> sonar-cleanup("sonar-cleanup
+   (sonar-cleanup)")
+   update-build-number("update-build-number
+   (update-build-number-python)") --> sast("sast
+   (sast)")
+   sonar("sonar
+   (sonarqube-scanner)") --> get-nexus-repository-url("get-nexus-repository-url
+   (get-nexus-repository-url)")
+   fetch-repository("fetch-repository
+   (git-clone)") --> gerrit-notify("gerrit-notify
+   (gerrit-ssh-cmd)")
    fetch-repository("fetch-repository
    (git-clone)") --> init-values("init-values
    (init-values)")
-   init-values("init-values
-   (init-values)") --> compile("compile
+   gerrit-notify("gerrit-notify
+   (gerrit-ssh-cmd)") --> id([fa:fa-circle])
+   sast("sast
+   (sast)") --> compile("compile
    (python)")
-   fetch-target-branch("fetch-target-branch
-   (git-cli)") --> sonar-prepare-files("sonar-prepare-files
-   (sonar-prepare-files-general)")
-   sonar-prepare-files("sonar-prepare-files
-   (sonar-prepare-files-general)") --> sonar("sonar
+   test("test
+   (python)") --> sonar("sonar
    (sonarqube-scanner)")
-   fetch-repository("fetch-repository
-   (git-clone)") --> dockerfile-lint("dockerfile-lint
-   (hadolint)")
-   sonar("sonar
-   (sonarqube-scanner)") --> dockerbuild-verify("dockerbuild-verify
-   (dockerbuild-verify)")
-   dockerfile-lint("dockerfile-lint
-   (hadolint)") --> dockerbuild-verify("dockerbuild-verify
-   (dockerbuild-verify)")
-   fetch-repository("fetch-repository
-   (git-clone)") --> helm-lint("helm-lint
-   (helm-lint)")
 ```
 
 ## Contributing
