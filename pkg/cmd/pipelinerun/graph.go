@@ -60,9 +60,16 @@ func graphCommand(p cli.Params) *cobra.Command {
 				graphs = append(graphs, graph)
 			}
 
-			if err = taskgraph.PrintAllGraphs(graphs, opts.OutputFormat, opts.WithTaskRef); err != nil {
-				return fmt.Errorf("failed to print graph: %w", err)
+			if opts.OutputDir != "" {
+				if err = taskgraph.WriteAllGraphs(graphs, opts.OutputFormat, opts.OutputDir, opts.WithTaskRef); err != nil {
+					return fmt.Errorf("failed to save graph: %w", err)
+				}
+			} else {
+				if err = taskgraph.PrintAllGraphs(graphs, opts.OutputFormat, opts.WithTaskRef); err != nil {
+					return fmt.Errorf("failed to print graph: %w", err)
+				}
 			}
+
 			return nil
 		},
 	}
