@@ -74,6 +74,10 @@ func (g *TaskGraph) ToDOT() *DOT {
 	}
 
 	for _, node := range g.Nodes {
+		if !node.hasParent {
+			// "start" is the special node that represents the start of the pipeline
+			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"start\" -> \"%s\"", node.Name))
+		}
 		if len(node.Dependencies) == 0 {
 			// "end" is the special node that represents the end of the pipeline
 			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\" -> \"end\"", node.Name))
@@ -94,6 +98,10 @@ func (g *TaskGraph) ToDOTWithTaskRef() *DOT {
 	}
 
 	for _, node := range g.Nodes {
+		if !node.hasParent {
+			// "start" is the special node that represents the start of the pipeline
+			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"start\" -> \"%s\n(%s)\"", node.Name, node.TaskRefName))
+		}
 		if len(node.Dependencies) == 0 {
 			// "end" is the special node that represents the end of the pipeline
 			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\n(%s)\" -> \"end\"", node.Name, node.TaskRefName))
@@ -109,7 +117,7 @@ func (g *TaskGraph) ToDOTWithTaskRef() *DOT {
 // String converts a DOT graph to a string
 func (d *DOT) String() string {
 	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s {\n  labelloc=\"t\"\n  label=\"%s\"\n  end [shape=\"point\" width=0.2]\n", d.Format, d.Name))
+	buf.WriteString(fmt.Sprintf("%s {\n  labelloc=\"t\"\n  label=\"%s\"\n  end [shape=\"point\" width=0.2]\n  start [shape=\"point\" width=0.2]\n", d.Format, d.Name))
 	for _, edge := range d.Edges {
 		buf.WriteString(fmt.Sprintf("%s\n", edge))
 	}

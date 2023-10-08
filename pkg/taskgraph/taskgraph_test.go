@@ -80,6 +80,8 @@ func TestTaskGraphToDOT(t *testing.T) {
 	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task2\"")
 	assert.Contains(t, dot.Edges, "  \"task1\" -> \"end\"")
 	assert.Contains(t, dot.Edges, "  \"task4\" -> \"end\"")
+	assert.Contains(t, dot.Edges, "  \"start\" -> \"task4\"")
+	assert.Contains(t, dot.Edges, "  \"start\" -> \"task3\"")
 }
 
 func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
@@ -96,6 +98,8 @@ func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
 	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task2\n(taskRef2)\"")
 	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"end\"")
 	assert.Contains(t, dot.Edges, "  \"task4\n(taskRef4)\" -> \"end\"")
+	assert.Contains(t, dot.Edges, "  \"start\" -> \"task3\n(taskRef3)\"")
+	assert.Contains(t, dot.Edges, "  \"start\" -> \"task4\n(taskRef4)\"")
 }
 
 func TestDOTString(t *testing.T) {
@@ -114,7 +118,16 @@ func TestDOTString(t *testing.T) {
 	}
 
 	// Test the String method
-	expected := "digraph {\n  labelloc=\"t\"\n  label=\"test-pipeline\"\n  end [shape=\"point\" width=0.2]\n  \"task1\" -> \"task2\"\n  \"task1\" -> \"task3\"\n  \"task2\" -> \"task3\"\n}\n"
+	expected := `digraph {
+  labelloc="t"
+  label="test-pipeline"
+  end [shape="point" width=0.2]
+  start [shape="point" width=0.2]
+  "task1" -> "task2"
+  "task1" -> "task3"
+  "task2" -> "task3"
+}
+`
 	assert.Equal(t, expected, dot.String())
 }
 
