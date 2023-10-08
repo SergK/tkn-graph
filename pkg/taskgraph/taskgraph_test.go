@@ -164,8 +164,10 @@ func TestTaskGraphToMermaid(t *testing.T) {
 	assert.Contains(t, mermaid, "   task2 --> task1\n")
 	assert.Contains(t, mermaid, "   task3 --> task1\n")
 	assert.Contains(t, mermaid, "   task3 --> task2\n")
-	assert.Contains(t, mermaid, "   task1 --> id([fa:fa-circle])\n")
-	assert.Contains(t, mermaid, "   task4 --> id([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task1 --> stop([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task4 --> stop([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task3\n")
+	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task4\n")
 }
 
 func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
@@ -179,8 +181,10 @@ func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
 	assert.Contains(t, mermaid, "   task2(\"task2\n   (taskRef2)\") --> task1(\"task1\n   (taskRef1)\")\n")
 	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task1(\"task1\n   (taskRef1)\")\n")
 	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task2(\"task2\n   (taskRef2)\")\n")
-	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> id([fa:fa-circle])\n")
-	assert.Contains(t, mermaid, "   task4(\"task4\n   (taskRef4)\") --> id([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> stop([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task4(\"task4\n   (taskRef4)\") --> stop([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task3(\"task3\n   (taskRef3)\")\n")
+	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task4(\"task4\n   (taskRef4)\")\n")
 }
 
 func TestFormatFunc(t *testing.T) {

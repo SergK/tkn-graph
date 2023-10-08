@@ -19,6 +19,7 @@ type TaskNode struct {
 	Name         string
 	TaskRefName  string // Name of the kind: Task referenced by this task in the pipeline
 	Dependencies []*TaskNode
+	hasParent    bool // Flag to indicate if the node has a parent
 }
 
 type DOT struct {
@@ -44,6 +45,7 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 		node := &TaskNode{
 			Name:        task.Name,
 			TaskRefName: task.TaskRef.Name,
+			hasParent:   false, // we assume that the node has no parent until we find a dependency
 		}
 		graph.Nodes[task.Name] = node
 	}
@@ -57,6 +59,7 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 		for _, depName := range task.RunAfter {
 			depNode := graph.Nodes[depName]
 			depNode.Dependencies = append(depNode.Dependencies, node)
+			node.hasParent = true
 		}
 	}
 
@@ -172,7 +175,10 @@ func (g *TaskGraph) ToMermaid() string {
 	mermaid := fmt.Sprintf("---\ntitle: %s\n---\nflowchart TD\n", g.PipelineName)
 	for _, node := range g.Nodes {
 		if len(node.Dependencies) == 0 {
-			mermaid += fmt.Sprintf("   %s --> id([fa:fa-circle])\n", node.Name)
+			mermaid += fmt.Sprintf("   %s --> stop([fa:fa-circle])\n", node.Name)
+		}
+		if !node.hasParent {
+			mermaid += fmt.Sprintf("   start([fa:fa-circle]) --> %s\n", node.Name)
 		}
 		for _, dep := range node.Dependencies {
 			mermaid += fmt.Sprintf("   %s --> %s\n", node.Name, dep.Name)
@@ -186,7 +192,10 @@ func (g *TaskGraph) ToMermaidWithTaskRef() string {
 	mermaid := fmt.Sprintf("---\ntitle: %s\n---\nflowchart TD\n", g.PipelineName)
 	for _, node := range g.Nodes {
 		if len(node.Dependencies) == 0 {
-			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> id([fa:fa-circle])\n", node.Name, node.Name, node.TaskRefName)
+			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> stop([fa:fa-circle])\n", node.Name, node.Name, node.TaskRefName)
+		}
+		if !node.hasParent {
+			mermaid += fmt.Sprintf("   start([fa:fa-circle]) --> %s(\"%s\n   (%s)\")\n", node.Name, node.Name, node.TaskRefName)
 		}
 		for _, dep := range node.Dependencies {
 			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> %s(\"%s\n   (%s)\")\n", node.Name, node.Name, node.TaskRefName, dep.Name, dep.Name, dep.TaskRefName)
