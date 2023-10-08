@@ -5,7 +5,6 @@ go 1.21.1
 require (
 	github.com/stretchr/testify v1.8.4
 	github.com/tektoncd/cli v0.32.0
-	k8s.io/client-go v0.28.2
 )
 
 require (
@@ -68,6 +67,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.28.2 // indirect
 	k8s.io/apiextensions-apiserver v0.26.5 // indirect
+	k8s.io/client-go v0.28.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead // indirect
 )

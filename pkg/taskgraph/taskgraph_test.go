@@ -314,11 +314,11 @@ func TestWriteAllGraphs(t *testing.T) {
 	}
 
 	// Write the test graph to all supported formats
-	err = WriteAllGraphs([]*TaskGraph{testGraph}, "dot", tempDir, false)
+	err = WriteAllGraphs([]*TaskGraph{testGraph}, "dot", tempDir, true)
 	assert.NoError(t, err)
-	err = WriteAllGraphs([]*TaskGraph{testGraph}, "puml", tempDir, false)
+	err = WriteAllGraphs([]*TaskGraph{testGraph}, "puml", tempDir, true)
 	assert.NoError(t, err)
-	err = WriteAllGraphs([]*TaskGraph{testGraph}, "mmd", tempDir, false)
+	err = WriteAllGraphs([]*TaskGraph{testGraph}, "mmd", tempDir, true)
 	assert.NoError(t, err)
 
 	// Check that the files were created
