@@ -139,6 +139,8 @@ func TestTaskGraphToPlantUML(t *testing.T) {
 	// Test the ToPlantUML method
 	plantuml := graph.ToPlantUML()
 	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
+	assert.Contains(t, plantuml, "[*] --> task3\n")
+	assert.Contains(t, plantuml, "[*] --> task4\n")
 	assert.Contains(t, plantuml, "task1 --> [*]\n")
 	assert.Contains(t, plantuml, "task4 --> [*]\n")
 	assert.Contains(t, plantuml, "task2 -down-> task1\n")
@@ -157,6 +159,8 @@ func TestTaskGraphToPlantUMLWithTaskRef(t *testing.T) {
 	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
 	assert.Contains(t, plantuml, "task1 --> [*]")
 	assert.Contains(t, plantuml, "task4 --> [*]")
+	assert.Contains(t, plantuml, "[*] --> task3\n")
+	assert.Contains(t, plantuml, "[*] --> task4\n")
 	assert.Contains(t, plantuml, "task2 -down-> task1")
 	assert.Contains(t, plantuml, "task3 -down-> task1")
 	assert.Contains(t, plantuml, "task3 -down-> task2")

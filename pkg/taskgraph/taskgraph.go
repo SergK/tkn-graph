@@ -132,6 +132,9 @@ func (g *TaskGraph) ToPlantUML() string {
 		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 		nodeName := strings.ReplaceAll(node.Name, "-", "_")
 		// the root node is the one with no dependencies and that task starts the execution immediately
+		if !node.hasParent {
+			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
+		}
 		if len(node.Dependencies) == 0 {
 			plantuml += fmt.Sprintf("%s --> [*]\n", nodeName)
 		}
@@ -156,6 +159,9 @@ func (g *TaskGraph) ToPlantUMLWithTaskRef() string {
 		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 		nodeName := strings.ReplaceAll(node.Name, "-", "_")
 		// the root node is the one with no dependencies and that task starts the execution immediately
+		if !node.hasParent {
+			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
+		}
 		if len(node.Dependencies) == 0 {
 			plantuml += fmt.Sprintf("%s --> [*]\n", nodeName)
 		}
