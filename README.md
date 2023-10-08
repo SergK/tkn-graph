@@ -160,26 +160,9 @@ The `tkn-graph` tool is flexible and can be customized to meet your specific nee
   title: gerrit-python-python-3.8-app-build-edp
   ---
   flowchart TD
-    update-build-number("update-build-number
-    (update-build-number-python)") --> sast("sast
-    (sast)")
-    sast("sast
-    (sast)") --> compile("compile
-    (python)")
-    push("push
-    (python)") --> kaniko-build("kaniko-build
-    (kaniko)")
-    gerrit-notify("gerrit-notify
-    (gerrit-ssh-cmd)") --> stop([fa:fa-circle])
-    compile("compile
-    (python)") --> test("test
-    (python)")
     get-nexus-repository-url("get-nexus-repository-url
     (get-nexus-repository-url)") --> push("push
     (python)")
-    kaniko-build("kaniko-build
-    (kaniko)") --> git-tag("git-tag
-    (git-cli)")
     git-tag("git-tag
     (git-cli)") --> update-cbis("update-cbis
     (update-cbis)")
@@ -191,25 +174,42 @@ The `tkn-graph` tool is flexible and can be customized to meet your specific nee
     fetch-repository("fetch-repository
     (git-clone)") --> init-values("init-values
     (init-values)")
+    gerrit-notify("gerrit-notify
+    (gerrit-ssh-cmd)") --> stop([fa:fa-circle])
+    compile("compile
+    (python)") --> test("test
+    (python)")
+    test("test
+    (python)") --> sonar("sonar
+    (sonarqube-scanner)")
+    get-version("get-version
+    (get-version-edp)") --> update-build-number("update-build-number
+    (update-build-number-python)")
+    sonar-cleanup("sonar-cleanup
+    (sonar-cleanup)") --> stop([fa:fa-circle])
+    push("push
+    (python)") --> kaniko-build("kaniko-build
+    (kaniko)")
+    kaniko-build("kaniko-build
+    (kaniko)") --> git-tag("git-tag
+    (git-cli)")
+    update-cbis("update-cbis
+    (update-cbis)") --> stop([fa:fa-circle])
     init-values("init-values
     (init-values)") --> get-version("get-version
     (get-version-edp)")
     init-values("init-values
     (init-values)") --> sonar-cleanup("sonar-cleanup
     (sonar-cleanup)")
-    sonar-cleanup("sonar-cleanup
-    (sonar-cleanup)") --> stop([fa:fa-circle])
+    update-build-number("update-build-number
+    (update-build-number-python)") --> sast("sast
+    (sast)")
+    sast("sast
+    (sast)") --> compile("compile
+    (python)")
     sonar("sonar
     (sonarqube-scanner)") --> get-nexus-repository-url("get-nexus-repository-url
     (get-nexus-repository-url)")
-    update-cbis("update-cbis
-    (update-cbis)") --> stop([fa:fa-circle])
-    get-version("get-version
-    (get-version-edp)") --> update-build-number("update-build-number
-    (update-build-number-python)")
-    test("test
-    (python)") --> sonar("sonar
-    (sonarqube-scanner)")
   ```
 
 ### Output
