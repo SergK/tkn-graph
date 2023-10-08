@@ -1,6 +1,20 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+### Features
+
+- Add start node for PUML format
+- Add start node for DOT format
+- Add support for start node using Mermaid format
+
+### Testing
+
+- Add more tests
+
+### Routine
+
+- Remove deprecated code
+
 
 <a name="v0.2.0"></a>
 ## [v0.2.0] - 2023-10-07
