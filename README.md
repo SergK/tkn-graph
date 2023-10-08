@@ -226,54 +226,56 @@ By following these steps and customizing the flags, you can use the `tkn-graph` 
 title: gerrit-python-python-3.8-app-build-edp
 ---
 flowchart TD
-   kaniko-build("kaniko-build
-   (kaniko)") --> git-tag("git-tag
-   (git-cli)")
-   git-tag("git-tag
-   (git-cli)") --> update-cbis("update-cbis
-   (update-cbis)")
-   get-version("get-version
-   (get-version-edp)") --> update-build-number("update-build-number
-   (update-build-number-python)")
-   sonar-cleanup("sonar-cleanup
-   (sonar-cleanup)") --> id([fa:fa-circle])
-   compile("compile
-   (python)") --> test("test
-   (python)")
-   push("push
-   (python)") --> kaniko-build("kaniko-build
-   (kaniko)")
-   get-nexus-repository-url("get-nexus-repository-url
-   (get-nexus-repository-url)") --> push("push
-   (python)")
-   update-cbis("update-cbis
-   (update-cbis)") --> id([fa:fa-circle])
-   init-values("init-values
-   (init-values)") --> get-version("get-version
-   (get-version-edp)")
-   init-values("init-values
-   (init-values)") --> sonar-cleanup("sonar-cleanup
-   (sonar-cleanup)")
-   update-build-number("update-build-number
-   (update-build-number-python)") --> sast("sast
-   (sast)")
-   sonar("sonar
-   (sonarqube-scanner)") --> get-nexus-repository-url("get-nexus-repository-url
-   (get-nexus-repository-url)")
-   fetch-repository("fetch-repository
-   (git-clone)") --> gerrit-notify("gerrit-notify
-   (gerrit-ssh-cmd)")
-   fetch-repository("fetch-repository
-   (git-clone)") --> init-values("init-values
-   (init-values)")
-   gerrit-notify("gerrit-notify
-   (gerrit-ssh-cmd)") --> id([fa:fa-circle])
-   sast("sast
-   (sast)") --> compile("compile
-   (python)")
-   test("test
-   (python)") --> sonar("sonar
-   (sonarqube-scanner)")
+  get-nexus-repository-url("get-nexus-repository-url
+  (get-nexus-repository-url)") --> push("push
+  (python)")
+  git-tag("git-tag
+  (git-cli)") --> update-cbis("update-cbis
+  (update-cbis)")
+  start([fa:fa-circle]) --> fetch-repository("fetch-repository
+  (git-clone)")
+  fetch-repository("fetch-repository
+  (git-clone)") --> gerrit-notify("gerrit-notify
+  (gerrit-ssh-cmd)")
+  fetch-repository("fetch-repository
+  (git-clone)") --> init-values("init-values
+  (init-values)")
+  gerrit-notify("gerrit-notify
+  (gerrit-ssh-cmd)") --> stop([fa:fa-circle])
+  compile("compile
+  (python)") --> test("test
+  (python)")
+  test("test
+  (python)") --> sonar("sonar
+  (sonarqube-scanner)")
+  get-version("get-version
+  (get-version-edp)") --> update-build-number("update-build-number
+  (update-build-number-python)")
+  sonar-cleanup("sonar-cleanup
+  (sonar-cleanup)") --> stop([fa:fa-circle])
+  push("push
+  (python)") --> kaniko-build("kaniko-build
+  (kaniko)")
+  kaniko-build("kaniko-build
+  (kaniko)") --> git-tag("git-tag
+  (git-cli)")
+  update-cbis("update-cbis
+  (update-cbis)") --> stop([fa:fa-circle])
+  init-values("init-values
+  (init-values)") --> get-version("get-version
+  (get-version-edp)")
+  init-values("init-values
+  (init-values)") --> sonar-cleanup("sonar-cleanup
+  (sonar-cleanup)")
+  update-build-number("update-build-number
+  (update-build-number-python)") --> sast("sast
+  (sast)")
+  sast("sast
+  (sast)") --> compile("compile
+  (python)")
+  sonar("sonar
+  (sonarqube-scanner)") --> get-nexus-repository-url("get-nexus-repository-url
+  (get-nexus-repository-url)")
 ```
 
 ## Contributing
