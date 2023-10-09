@@ -19,7 +19,7 @@ type TaskNode struct {
 	Name         string
 	TaskRefName  string // Name of the kind: Task referenced by this task in the pipeline
 	Dependencies []*TaskNode
-	hasParent    bool // Flag to indicate if the node has a parent
+	IsRoot       bool // Flag to indicate the the node is the root of the graph
 }
 
 type DOT struct {
@@ -35,7 +35,7 @@ func createTaskNode(task *v1pipeline.PipelineTask) *TaskNode {
 	return &TaskNode{
 		Name:        task.Name,
 		TaskRefName: task.TaskRef.Name,
-		hasParent:   false, // we assume that the node has no parent until we find a dependency
+		IsRoot:      true, // we assume that the node is root until we find a parent
 	}
 }
 
@@ -63,7 +63,7 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 		for _, depName := range task.RunAfter {
 			depNode := graph.Nodes[depName]
 			depNode.Dependencies = append(depNode.Dependencies, node)
-			node.hasParent = true
+			node.IsRoot = false
 		}
 	}
 
@@ -78,7 +78,7 @@ func (g *TaskGraph) ToDOT() *DOT {
 	}
 
 	for _, node := range g.Nodes {
-		if !node.hasParent {
+		if node.IsRoot {
 			// "start" is the special node that represents the start of the pipeline
 			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"start\" -> \"%s\"", node.Name))
 		}
@@ -102,7 +102,7 @@ func (g *TaskGraph) ToDOTWithTaskRef() *DOT {
 	}
 
 	for _, node := range g.Nodes {
-		if !node.hasParent {
+		if node.IsRoot {
 			// "start" is the special node that represents the start of the pipeline
 			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"start\" -> \"%s\n(%s)\"", node.Name, node.TaskRefName))
 		}
@@ -136,7 +136,7 @@ func (g *TaskGraph) ToPlantUML() string {
 		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 		nodeName := strings.ReplaceAll(node.Name, "-", "_")
 		// the root node is the one with no dependencies and that task starts the execution immediately
-		if !node.hasParent {
+		if node.IsRoot {
 			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
 		}
 		if len(node.Dependencies) == 0 {
@@ -163,7 +163,7 @@ func (g *TaskGraph) ToPlantUMLWithTaskRef() string {
 		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
 		nodeName := strings.ReplaceAll(node.Name, "-", "_")
 		// the root node is the one with no dependencies and that task starts the execution immediately
-		if !node.hasParent {
+		if node.IsRoot {
 			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
 		}
 		if len(node.Dependencies) == 0 {
@@ -195,7 +195,7 @@ func (g *TaskGraph) ToMermaid() string {
 		if len(node.Dependencies) == 0 {
 			mermaid += fmt.Sprintf("   %s --> stop([fa:fa-circle])\n", node.Name)
 		}
-		if !node.hasParent {
+		if node.IsRoot {
 			mermaid += fmt.Sprintf("   start([fa:fa-circle]) --> %s\n", node.Name)
 		}
 		for _, dep := range node.Dependencies {
@@ -212,7 +212,7 @@ func (g *TaskGraph) ToMermaidWithTaskRef() string {
 		if len(node.Dependencies) == 0 {
 			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> stop([fa:fa-circle])\n", node.Name, node.Name, node.TaskRefName)
 		}
-		if !node.hasParent {
+		if node.IsRoot {
 			mermaid += fmt.Sprintf("   start([fa:fa-circle]) --> %s(\"%s\n   (%s)\")\n", node.Name, node.Name, node.TaskRefName)
 		}
 		for _, dep := range node.Dependencies {
