@@ -31,22 +31,26 @@ type DOT struct {
 // FormatFunc is a function that generates the output format string for a TaskGraph
 type formatFuncType func(graph *TaskGraph, format string, withTaskRef bool) (string, error)
 
+func createTaskNode(task *v1pipeline.PipelineTask) *TaskNode {
+	return &TaskNode{
+		Name:        task.Name,
+		TaskRefName: task.TaskRef.Name,
+		hasParent:   false, // we assume that the node has no parent until we find a dependency
+	}
+}
+
 // In the case where the order of tasks is arbitrary, it is necessary to create all the nodes first
 // and then add the dependencies in a separate loop (since dependencies doesn't exist in TaskRef).
 // BuildTaskGraph creates a TaskGraph from a list of PipelineTasks
 func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	graph := &TaskGraph{
-		Nodes: make(map[string]*TaskNode),
+		Nodes: make(map[string]*TaskNode, len(tasks)),
 	}
 
 	// Create a node for each task and add it to the graph
 	for i := range tasks {
 		task := &tasks[i]
-		node := &TaskNode{
-			Name:        task.Name,
-			TaskRefName: task.TaskRef.Name,
-			hasParent:   false, // we assume that the node has no parent until we find a dependency
-		}
+		node := createTaskNode(task)
 		graph.Nodes[task.Name] = node
 	}
 
