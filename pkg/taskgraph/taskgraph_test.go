@@ -176,7 +176,8 @@ func TestTaskGraphToMermaid(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToMermaid method
-	mermaid := graph.ToMermaid()
+	mermaid, err := graph.ToMermaid()
+	assert.NoError(t, err)
 	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
 	assert.Contains(t, mermaid, "   task2 --> task1\n")
 	assert.Contains(t, mermaid, "   task3 --> task1\n")
@@ -193,7 +194,8 @@ func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToMermaidWithTaskRef method
-	mermaid := graph.ToMermaidWithTaskRef()
+	mermaid, err := graph.ToMermaidWithTaskRef()
+	assert.NoError(t, err)
 	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
 	assert.Contains(t, mermaid, "   task2(\"task2\n   (taskRef2)\") --> task1(\"task1\n   (taskRef1)\")\n")
 	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task1(\"task1\n   (taskRef1)\")\n")

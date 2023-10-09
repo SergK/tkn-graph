@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 
 	v1pipeline "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 )
@@ -188,38 +189,24 @@ func (g *TaskGraph) ToPlantUMLWithTaskRef() string {
 	return plantuml
 }
 
-// ToMermaid converts a TaskGraph to a mermaid graph
-func (g *TaskGraph) ToMermaid() string {
-	mermaid := fmt.Sprintf("---\ntitle: %s\n---\nflowchart TD\n", g.PipelineName)
-	for _, node := range g.Nodes {
-		if len(node.Dependencies) == 0 {
-			mermaid += fmt.Sprintf("   %s --> stop([fa:fa-circle])\n", node.Name)
-		}
-		if node.IsRoot {
-			mermaid += fmt.Sprintf("   start([fa:fa-circle]) --> %s\n", node.Name)
-		}
-		for _, dep := range node.Dependencies {
-			mermaid += fmt.Sprintf("   %s --> %s\n", node.Name, dep.Name)
-		}
-	}
-	return mermaid
+func (g *TaskGraph) ToMermaid() (string, error) {
+	return generateMermaid(g, mermaidTemplate)
 }
 
-// ToMermaidWithTaskRef converts a TaskGraph to a mermaid graph with taskRefName
-func (g *TaskGraph) ToMermaidWithTaskRef() string {
-	mermaid := fmt.Sprintf("---\ntitle: %s\n---\nflowchart TD\n", g.PipelineName)
-	for _, node := range g.Nodes {
-		if len(node.Dependencies) == 0 {
-			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> stop([fa:fa-circle])\n", node.Name, node.Name, node.TaskRefName)
-		}
-		if node.IsRoot {
-			mermaid += fmt.Sprintf("   start([fa:fa-circle]) --> %s(\"%s\n   (%s)\")\n", node.Name, node.Name, node.TaskRefName)
-		}
-		for _, dep := range node.Dependencies {
-			mermaid += fmt.Sprintf("   %s(\"%s\n   (%s)\") --> %s(\"%s\n   (%s)\")\n", node.Name, node.Name, node.TaskRefName, dep.Name, dep.Name, dep.TaskRefName)
-		}
+func (g *TaskGraph) ToMermaidWithTaskRef() (string, error) {
+	return generateMermaid(g, mermaidTemplateWithTaskRef)
+}
+
+func generateMermaid(g *TaskGraph, tmpl string) (string, error) {
+	var builder strings.Builder
+	t, err := template.New("mermaid").Parse(tmpl)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse mermaid template: %w", err)
 	}
-	return mermaid
+	if err := t.Execute(&builder, g); err != nil {
+		return "", fmt.Errorf("failed to execute mermaid template: %w", err)
+	}
+	return builder.String(), nil
 }
 
 // formatFunc generates the output format string for a TaskGraph based on the specified format
@@ -237,9 +224,9 @@ var formatFunc formatFuncType = func(graph *TaskGraph, format string, withTaskRe
 		return graph.ToPlantUML(), nil
 	case "mmd":
 		if withTaskRef {
-			return graph.ToMermaidWithTaskRef(), nil
+			return graph.ToMermaidWithTaskRef()
 		}
-		return graph.ToMermaid(), nil
+		return graph.ToMermaid()
 	default:
 		return "", fmt.Errorf("Invalid output format: %s", format)
 	}
