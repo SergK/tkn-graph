@@ -53,17 +53,17 @@ func TestBuildTaskGraph(t *testing.T) {
 	assert.Equal(t, 4, len(graph.Nodes))
 
 	// Assert that the nodes have the correct names and task references
-	assert.Equal(t, "taskRef1", graph.Nodes["task1"].TaskRefName)
-	assert.Equal(t, "taskRef2", graph.Nodes["task2"].TaskRefName)
-	assert.Equal(t, "taskRef3", graph.Nodes["task3"].TaskRefName)
+	assert.Equal(t, "taskRef1", graph.Nodes[0].TaskRefName)
+	assert.Equal(t, "taskRef2", graph.Nodes[1].TaskRefName)
+	assert.Equal(t, "taskRef3", graph.Nodes[2].TaskRefName)
 
 	// Assert that the nodes have the correct dependencies
 	// Task3 has two downstream dependencies Task1 and Task2
-	assert.Equal(t, []*TaskNode{graph.Nodes["task1"], graph.Nodes["task2"]}, graph.Nodes["task3"].Dependencies)
+	assert.Equal(t, []*TaskNode{&graph.Nodes[0], &graph.Nodes[1]}, graph.Nodes[2].Dependencies)
 	// Task2 has one downstream dependency Task1
-	assert.Equal(t, []*TaskNode{graph.Nodes["task1"]}, graph.Nodes["task2"].Dependencies)
+	assert.Equal(t, []*TaskNode{&graph.Nodes[0]}, graph.Nodes[1].Dependencies)
 	// Task1 has no downstream dependencies
-	assert.Empty(t, graph.Nodes["task1"].Dependencies)
+	assert.Empty(t, graph.Nodes[0].Dependencies)
 }
 
 func TestTaskGraphToDOT(t *testing.T) {
@@ -231,8 +231,8 @@ func TestFormatFunc(t *testing.T) {
 func TestPrintAllGraphs(t *testing.T) {
 	// Create a test graph
 	testGraph := &TaskGraph{
-		Nodes: map[string]*TaskNode{
-			"task1": {
+		Nodes: []TaskNode{
+			{
 				Name:        "task1",
 				TaskRefName: "taskRef1",
 				Dependencies: []*TaskNode{
@@ -242,7 +242,7 @@ func TestPrintAllGraphs(t *testing.T) {
 					},
 				},
 			},
-			"task2": {
+			{
 				Name:        "task2",
 				TaskRefName: "taskRef2",
 				Dependencies: []*TaskNode{
@@ -296,8 +296,8 @@ func TestWriteAllGraphs(t *testing.T) {
 	// Create a test graph
 	testGraph := &TaskGraph{
 		PipelineName: "test-pipeline",
-		Nodes: map[string]*TaskNode{
-			"task1": {
+		Nodes: []TaskNode{
+			{
 				Name:        "task1",
 				TaskRefName: "taskRef1",
 				Dependencies: []*TaskNode{
@@ -307,7 +307,7 @@ func TestWriteAllGraphs(t *testing.T) {
 					},
 				},
 			},
-			"task2": {
+			{
 				Name:        "task2",
 				TaskRefName: "taskRef2",
 				Dependencies: []*TaskNode{
@@ -317,7 +317,7 @@ func TestWriteAllGraphs(t *testing.T) {
 					},
 				},
 			},
-			"task3": {
+			{
 				Name:        "task3",
 				TaskRefName: "taskRef3",
 				Dependencies: []*TaskNode{
@@ -327,7 +327,7 @@ func TestWriteAllGraphs(t *testing.T) {
 					},
 				},
 			},
-			"task4": {
+			{
 				Name:        "task4",
 				TaskRefName: "taskRef4",
 			},
