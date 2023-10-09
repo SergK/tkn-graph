@@ -37,7 +37,7 @@ func getTestTasks() []v1pipeline.PipelineTask {
 		},
 		// we can have task without any dependencies
 		{
-			Name: "task4",
+			Name: "task-with-dash",
 			TaskRef: &v1pipeline.TaskRef{
 				Name: "taskRef4",
 			},
@@ -56,6 +56,7 @@ func TestBuildTaskGraph(t *testing.T) {
 	assert.Equal(t, "taskRef1", graph.Nodes["task1"].TaskRefName)
 	assert.Equal(t, "taskRef2", graph.Nodes["task2"].TaskRefName)
 	assert.Equal(t, "taskRef3", graph.Nodes["task3"].TaskRefName)
+	assert.Equal(t, "taskRef4", graph.Nodes["task-with-dash"].TaskRefName)
 
 	// Assert that the nodes have the correct dependencies
 	// Task3 has two downstream dependencies Task1 and Task2
@@ -79,8 +80,8 @@ func TestTaskGraphToDOT(t *testing.T) {
 	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task1\"")
 	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task2\"")
 	assert.Contains(t, dot.Edges, "  \"task1\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"task4\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"start\" -> \"task4\"")
+	assert.Contains(t, dot.Edges, "  \"task-with-dash\" -> \"end\"")
+	assert.Contains(t, dot.Edges, "  \"start\" -> \"task-with-dash\"")
 	assert.Contains(t, dot.Edges, "  \"start\" -> \"task3\"")
 }
 
@@ -97,9 +98,9 @@ func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
 	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task1\n(taskRef1)\"")
 	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task2\n(taskRef2)\"")
 	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"task4\n(taskRef4)\" -> \"end\"")
+	assert.Contains(t, dot.Edges, "  \"task-with-dash\n(taskRef4)\" -> \"end\"")
 	assert.Contains(t, dot.Edges, "  \"start\" -> \"task3\n(taskRef3)\"")
-	assert.Contains(t, dot.Edges, "  \"start\" -> \"task4\n(taskRef4)\"")
+	assert.Contains(t, dot.Edges, "  \"start\" -> \"task-with-dash\n(taskRef4)\"")
 }
 
 func TestDOTString(t *testing.T) {
@@ -137,12 +138,13 @@ func TestTaskGraphToPlantUML(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToPlantUML method
-	plantuml := graph.ToPlantUML()
+	plantuml, err := graph.ToPlantUML(false)
+	assert.NoError(t, err)
 	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
 	assert.Contains(t, plantuml, "[*] --> task3\n")
-	assert.Contains(t, plantuml, "[*] --> task4\n")
+	assert.Contains(t, plantuml, "[*] --> task_with_dash\n")
 	assert.Contains(t, plantuml, "task1 --> [*]\n")
-	assert.Contains(t, plantuml, "task4 --> [*]\n")
+	assert.Contains(t, plantuml, "task_with_dash --> [*]\n")
 	assert.Contains(t, plantuml, "task2 -down-> task1\n")
 	assert.Contains(t, plantuml, "task3 -down-> task1\n")
 	assert.Contains(t, plantuml, "task3 -down-> task2\n")
@@ -155,12 +157,13 @@ func TestTaskGraphToPlantUMLWithTaskRef(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToPlantUMLWithTaskRef method
-	plantuml := graph.ToPlantUMLWithTaskRef()
+	plantuml, err := graph.ToPlantUML(true)
+	assert.NoError(t, err)
 	assert.Contains(t, plantuml, "@startuml\nhide empty description\ntitle test-pipeline\n\n")
 	assert.Contains(t, plantuml, "task1 --> [*]")
-	assert.Contains(t, plantuml, "task4 --> [*]")
+	assert.Contains(t, plantuml, "task_with_dash --> [*]")
 	assert.Contains(t, plantuml, "[*] --> task3\n")
-	assert.Contains(t, plantuml, "[*] --> task4\n")
+	assert.Contains(t, plantuml, "[*] --> task_with_dash\n")
 	assert.Contains(t, plantuml, "task2 -down-> task1")
 	assert.Contains(t, plantuml, "task3 -down-> task1")
 	assert.Contains(t, plantuml, "task3 -down-> task2")
@@ -183,9 +186,9 @@ func TestTaskGraphToMermaid(t *testing.T) {
 	assert.Contains(t, mermaid, "   task3 --> task1\n")
 	assert.Contains(t, mermaid, "   task3 --> task2\n")
 	assert.Contains(t, mermaid, "   task1 --> stop([fa:fa-circle])\n")
-	assert.Contains(t, mermaid, "   task4 --> stop([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task-with-dash --> stop([fa:fa-circle])\n")
 	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task3\n")
-	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task4\n")
+	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task-with-dash\n")
 }
 
 func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
@@ -201,9 +204,9 @@ func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
 	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task1(\"task1\n   (taskRef1)\")\n")
 	assert.Contains(t, mermaid, "   task3(\"task3\n   (taskRef3)\") --> task2(\"task2\n   (taskRef2)\")\n")
 	assert.Contains(t, mermaid, "   task1(\"task1\n   (taskRef1)\") --> stop([fa:fa-circle])\n")
-	assert.Contains(t, mermaid, "   task4(\"task4\n   (taskRef4)\") --> stop([fa:fa-circle])\n")
+	assert.Contains(t, mermaid, "   task-with-dash(\"task-with-dash\n   (taskRef4)\") --> stop([fa:fa-circle])\n")
 	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task3(\"task3\n   (taskRef3)\")\n")
-	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task4(\"task4\n   (taskRef4)\")\n")
+	assert.Contains(t, mermaid, "   start([fa:fa-circle]) --> task-with-dash(\"task-with-dash\n   (taskRef4)\")\n")
 }
 
 func TestFormatFunc(t *testing.T) {

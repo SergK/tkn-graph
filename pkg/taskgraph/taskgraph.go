@@ -130,63 +130,25 @@ func (d *DOT) String() string {
 	return buf.String()
 }
 
-// ToPlantUML converts a TaskGraph to a PlantUML graph
-func (g *TaskGraph) ToPlantUML() string {
-	plantuml := fmt.Sprintf("@startuml\nhide empty description\ntitle %s\n\n", g.PipelineName)
-	for _, node := range g.Nodes {
-		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
-		nodeName := strings.ReplaceAll(node.Name, "-", "_")
-		// the root node is the one with no dependencies and that task starts the execution immediately
-		if node.IsRoot {
-			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
-		}
-		if len(node.Dependencies) == 0 {
-			plantuml += fmt.Sprintf("%s --> [*]\n", nodeName)
-		}
-		for _, dep := range node.Dependencies {
-			// Replace dashes with underscores in node names because PlantUML doesn't like dashes
-			depName := strings.ReplaceAll(dep.Name, "-", "_")
-			plantuml += fmt.Sprintf("%s -down-> %s\n", nodeName, depName)
-		}
+func (g *TaskGraph) ToPlantUML(withTaskRef bool) (string, error) {
+	var builder strings.Builder
+	funcMap := template.FuncMap{
+		"replace": strings.ReplaceAll,
 	}
-	plantuml += "\n@enduml\n"
-	return plantuml
-}
-
-// ToPlantUMLWithTaskRef converts a TaskGraph to a PlantUML graph with taskRefName
-func (g *TaskGraph) ToPlantUMLWithTaskRef() string {
-	plantuml := fmt.Sprintf("@startuml\nhide empty description\ntitle %s\n\n", g.PipelineName)
-
-	// Create a map to store the unique nodes and their TaskRefName values
-	uniqueNodes := make(map[string]string)
-
-	for _, node := range g.Nodes {
-		// Replace dashes with underscores in node names because PlantUML doesn't like dashes
-		nodeName := strings.ReplaceAll(node.Name, "-", "_")
-		// the root node is the one with no dependencies and that task starts the execution immediately
-		if node.IsRoot {
-			plantuml += fmt.Sprintf("[*] --> %s\n", nodeName)
-		}
-		if len(node.Dependencies) == 0 {
-			plantuml += fmt.Sprintf("%s --> [*]\n", nodeName)
-		}
-		for _, dep := range node.Dependencies {
-			// Replace dashes with underscores in node names because PlantUML doesn't like dashes
-			depName := strings.ReplaceAll(dep.Name, "-", "_")
-			plantuml += fmt.Sprintf("%s -down-> %s\n", nodeName, depName)
-		}
-		// Add the node to the uniqueNodes map if it doesn't already exist
-		if _, ok := uniqueNodes[nodeName]; !ok {
-			uniqueNodes[nodeName] = node.TaskRefName
-		}
+	var tmpl *template.Template
+	var err error
+	if withTaskRef {
+		tmpl, err = template.New("plantuml").Funcs(funcMap).Parse(plantumlTemplateWithTaskRef)
+	} else {
+		tmpl, err = template.New("plantuml").Funcs(funcMap).Parse(plantumlTemplate)
 	}
-	plantuml += "\n"
-	// Add the unique nodes to the output
-	for nodeName, taskRefName := range uniqueNodes {
-		plantuml += fmt.Sprintf("%s: %s\n", nodeName, taskRefName)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse plantuml template: %w", err)
 	}
-	plantuml += "\n@enduml\n"
-	return plantuml
+	if err := tmpl.Execute(&builder, g); err != nil {
+		return "", fmt.Errorf("failed to execute plantuml template: %w", err)
+	}
+	return builder.String(), nil
 }
 
 func (g *TaskGraph) ToMermaid() (string, error) {
@@ -218,10 +180,7 @@ var formatFunc formatFuncType = func(graph *TaskGraph, format string, withTaskRe
 		}
 		return graph.ToDOT().String(), nil
 	case "puml":
-		if withTaskRef {
-			return graph.ToPlantUMLWithTaskRef(), nil
-		}
-		return graph.ToPlantUML(), nil
+		return graph.ToPlantUML(withTaskRef)
 	case "mmd":
 		if withTaskRef {
 			return graph.ToMermaidWithTaskRef()
