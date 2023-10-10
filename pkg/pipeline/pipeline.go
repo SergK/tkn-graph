@@ -19,3 +19,12 @@ func GetAllPipelines(c *cli.Clients, ns string) ([]v1.Pipeline, error) {
 	}
 	return pipelines.Items, nil
 }
+
+// Get Pipeline by name
+func GetPipelineByName(c *cli.Clients, name string, ns string) (*v1.Pipeline, error) {
+	pipeline, err := c.Tekton.TektonV1().Pipelines(ns).Get(context.TODO(), name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get Pipeline with name %s: %w", name, err)
+	}
+	return pipeline, nil
+}

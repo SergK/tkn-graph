@@ -79,3 +79,53 @@ func TestGetAllPipelineRunsWithError(t *testing.T) {
 		t.Fatalf("Expected error message to be 'no PipelineRuns found in namespace my-namespace', got %s", err.Error())
 	}
 }
+
+func TestGetPipelineRunsByName(t *testing.T) {
+	fakeClient := fakeclient.NewSimpleClientset()
+
+	// Define the expected pipeline run
+	expectedPipelineRun := &v1.PipelineRun{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "pipeline-1",
+			Namespace: namespace,
+		},
+	}
+
+	// Create the fake pipeline run
+	_, err := fakeClient.TektonV1().PipelineRuns(namespace).Create(context.TODO(), expectedPipelineRun, metav1.CreateOptions{})
+	if err != nil {
+		t.Fatalf("Error creating fake pipelineRun run: %v", err)
+	}
+
+	c := &cli.Clients{
+		Tekton: fakeClient,
+	}
+
+	// Get the pipeline run
+	pipelineRun, err := GetPipelineRunsByName(c, expectedPipelineRun.Name, namespace)
+	if err != nil {
+		t.Fatalf("Error getting pipeline run: %v", err)
+	}
+
+	// Check that the pipeline run is as expected
+	if pipelineRun.Name != expectedPipelineRun.Name {
+		t.Fatalf("Expected pipeline run to have name %s, got %s", expectedPipelineRun.Name, pipelineRun.Name)
+	}
+}
+
+func TestPipelineByNameWithError(t *testing.T) {
+	fakeClient := fakeclient.NewSimpleClientset()
+
+	c := &cli.Clients{
+		Tekton: fakeClient,
+	}
+
+	// Get the pipeline runs
+	_, err := GetPipelineRunsByName(c, "fake-pipeline", namespace)
+	if err == nil {
+		t.Fatal("GetPipelineRunsByName did not return an error, expected an error")
+	}
+	if err.Error() != "failed to get PipelineRun with name fake-pipeline: pipelineruns.tekton.dev \"fake-pipeline\" not found" {
+		t.Fatalf("Expected error message to be 'failed to get PipelineRun with name fake-pipeline: pipelineruns.tekton.dev \"fake-pipeline\" not found', got %s", err.Error())
+	}
+}

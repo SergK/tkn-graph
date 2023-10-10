@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tektoncd/cli/pkg/cli"
 	"github.com/tektoncd/cli/pkg/flags"
+	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 )
 
 type graphOptions struct {
@@ -45,12 +46,24 @@ func graphCommand(p cli.Params) *cobra.Command {
 				return err
 			}
 
-			// Build the list of task graphs
 			var graphs []*taskgraph.TaskGraph
+			var pipelines []v1.Pipeline
 
-			pipelines, err := pipelinepkg.GetAllPipelines(cs, p.Namespace())
-			if err != nil {
-				return fmt.Errorf("failed to get Pipelines: %w", err)
+			switch len(args) {
+			case 1:
+				var pipeline *v1.Pipeline
+				pipeline, err = pipelinepkg.GetPipelineByName(cs, args[0], p.Namespace())
+				if err != nil {
+					return fmt.Errorf("failed to run GetPipelineRunByName: %w", err)
+				}
+				pipelines = append(pipelines, *pipeline)
+			case 0:
+				pipelines, err = pipelinepkg.GetAllPipelines(cs, p.Namespace())
+				if err != nil {
+					return fmt.Errorf("failed to run GetAllPipelineRuns: %w", err)
+				}
+			default:
+				return fmt.Errorf("too many arguments. Provide either no arguments to get all Pipelines or a single Pipeline name")
 			}
 
 			for i := range pipelines {

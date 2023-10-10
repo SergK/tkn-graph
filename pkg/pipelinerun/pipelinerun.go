@@ -19,3 +19,12 @@ func GetAllPipelineRuns(c *cli.Clients, ns string) ([]v1.PipelineRun, error) {
 	}
 	return pipelineruns.Items, nil
 }
+
+// Get PipelineRun by name
+func GetPipelineRunsByName(c *cli.Clients, name string, ns string) (*v1.PipelineRun, error) {
+	pipelinerun, err := c.Tekton.TektonV1().PipelineRuns(ns).Get(context.TODO(), name, metav1.GetOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to get PipelineRun with name %s: %w", name, err)
+	}
+	return pipelinerun, nil
+}
