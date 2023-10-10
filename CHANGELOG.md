@@ -1,6 +1,25 @@
 <a name="unreleased"></a>
 ## [Unreleased]
 
+
+<a name="v0.4.0"></a>
+## [v0.4.0] - 2023-10-10
+### Features
+
+- Allow to get graph for specific Pipeline/PipelineRun provided by name
+
+### Code Refactoring
+
+- Do some minor sruff
+- Use go-template for DOT format
+- Use go-template for PlantUML
+- Use go-template for Mermaid generation
+- Use isRoot to define root task
+- Move create logic to separate function
+
+
+<a name="v0.3.0"></a>
+## [v0.3.0] - 2023-10-08
 ### Features
 
 - Add start node for PUML format
@@ -14,6 +33,12 @@
 ### Routine
 
 - Remove deprecated code
+
+### Documentation
+
+- Update mmd example graph
+- Update mmd format
+- Update documentation with start/stop nodes support
 
 
 <a name="v0.2.0"></a>
@@ -67,5 +92,7 @@
 - Update README.md file
 
 
-[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.4.0...HEAD
+[v0.4.0]: https://github.com/sergk/tkn-graph/compare/v0.3.0...v0.4.0
+[v0.3.0]: https://github.com/sergk/tkn-graph/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/sergk/tkn-graph/compare/v0.1.0...v0.2.0
