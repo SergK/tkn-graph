@@ -23,7 +23,7 @@ type TaskNode struct {
 }
 
 // FormatFunc is a function that generates the output format string for a TaskGraph
-type formatFuncType func(graph *TaskGraph, format string, withTaskRef bool) (string, error)
+type formatFuncMap func(graph *TaskGraph, format string, withTaskRef bool) (string, error)
 
 func createTaskNode(task *v1pipeline.PipelineTask) *TaskNode {
 	return &TaskNode{
@@ -109,11 +109,9 @@ func (g *TaskGraph) ToPlantUML(withTaskRef bool) (string, error) {
 
 func (g *TaskGraph) ToMermaid(withTaskRef bool) (string, error) {
 	var builder strings.Builder
-	var tmpl string
+	tmpl := mermaidTemplate
 	if withTaskRef {
 		tmpl = mermaidTemplateWithTaskRef
-	} else {
-		tmpl = mermaidTemplate
 	}
 	t, err := template.New("mermaid").Parse(tmpl)
 	if err != nil {
@@ -126,7 +124,7 @@ func (g *TaskGraph) ToMermaid(withTaskRef bool) (string, error) {
 }
 
 // formatFunc generates the output format string for a TaskGraph based on the specified format
-var formatFunc formatFuncType = func(graph *TaskGraph, format string, withTaskRef bool) (string, error) {
+var formatFunc formatFuncMap = func(graph *TaskGraph, format string, withTaskRef bool) (string, error) {
 	switch strings.ToLower(format) {
 	case "dot":
 		return graph.ToDOT(withTaskRef)
