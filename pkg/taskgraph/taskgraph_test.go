@@ -73,16 +73,16 @@ func TestTaskGraphToDOT(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToDOT method
-	dot := graph.ToDOT()
-	assert.Equal(t, "digraph", dot.Format)
-	assert.Equal(t, testPipelineName, dot.Name)
-	assert.Contains(t, dot.Edges, "  \"task2\" -> \"task1\"")
-	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task1\"")
-	assert.Contains(t, dot.Edges, "  \"task3\" -> \"task2\"")
-	assert.Contains(t, dot.Edges, "  \"task1\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"task-with-dash\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"start\" -> \"task-with-dash\"")
-	assert.Contains(t, dot.Edges, "  \"start\" -> \"task3\"")
+	dot, err := graph.ToDOT(false)
+	assert.NoError(t, err)
+	assert.Contains(t, dot, "label=\"test-pipeline\"")
+	assert.Contains(t, dot, "  \"task2\" -> \"task1\"")
+	assert.Contains(t, dot, "  \"task3\" -> \"task1\"")
+	assert.Contains(t, dot, "  \"task3\" -> \"task2\"")
+	assert.Contains(t, dot, "  \"task1\" -> \"end\"")
+	assert.Contains(t, dot, "  \"task-with-dash\" -> \"end\"")
+	assert.Contains(t, dot, "  \"start\" -> \"task-with-dash\"")
+	assert.Contains(t, dot, "  \"start\" -> \"task3\"")
 }
 
 func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
@@ -91,45 +91,16 @@ func TestTaskGraphToDOTWithTaskRef(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToDOTWithTaskRef method
-	dot := graph.ToDOTWithTaskRef()
-	assert.Equal(t, "digraph", dot.Format)
-	assert.Equal(t, testPipelineName, dot.Name)
-	assert.Contains(t, dot.Edges, "  \"task2\n(taskRef2)\" -> \"task1\n(taskRef1)\"")
-	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task1\n(taskRef1)\"")
-	assert.Contains(t, dot.Edges, "  \"task3\n(taskRef3)\" -> \"task2\n(taskRef2)\"")
-	assert.Contains(t, dot.Edges, "  \"task1\n(taskRef1)\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"task-with-dash\n(taskRef4)\" -> \"end\"")
-	assert.Contains(t, dot.Edges, "  \"start\" -> \"task3\n(taskRef3)\"")
-	assert.Contains(t, dot.Edges, "  \"start\" -> \"task-with-dash\n(taskRef4)\"")
-}
-
-func TestDOTString(t *testing.T) {
-	// Define some test edges
-	edges := []string{
-		"  \"task1\" -> \"task2\"",
-		"  \"task1\" -> \"task3\"",
-		"  \"task2\" -> \"task3\"",
-	}
-
-	// Create a DOT object with the test edges
-	dot := DOT{
-		Format: "digraph",
-		Name:   testPipelineName,
-		Edges:  edges,
-	}
-
-	// Test the String method
-	expected := `digraph {
-  labelloc="t"
-  label="test-pipeline"
-  end [shape="point" width=0.2]
-  start [shape="point" width=0.2]
-  "task1" -> "task2"
-  "task1" -> "task3"
-  "task2" -> "task3"
-}
-`
-	assert.Equal(t, expected, dot.String())
+	dot, err := graph.ToDOT(true)
+	assert.NoError(t, err)
+	assert.Contains(t, dot, "label=\"test-pipeline\"")
+	assert.Contains(t, dot, "  \"task2\n(taskRef2)\" -> \"task1\n(taskRef1)\"")
+	assert.Contains(t, dot, "  \"task3\n(taskRef3)\" -> \"task1\n(taskRef1)\"")
+	assert.Contains(t, dot, "  \"task3\n(taskRef3)\" -> \"task2\n(taskRef2)\"")
+	assert.Contains(t, dot, "  \"task1\n(taskRef1)\" -> \"end\"")
+	assert.Contains(t, dot, "  \"task-with-dash\n(taskRef4)\" -> \"end\"")
+	assert.Contains(t, dot, "  \"start\" -> \"task3\n(taskRef3)\"")
+	assert.Contains(t, dot, "  \"start\" -> \"task-with-dash\n(taskRef4)\"")
 }
 
 func TestTaskGraphToPlantUML(t *testing.T) {
@@ -179,7 +150,7 @@ func TestTaskGraphToMermaid(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToMermaid method
-	mermaid, err := graph.ToMermaid()
+	mermaid, err := graph.ToMermaid(false)
 	assert.NoError(t, err)
 	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
 	assert.Contains(t, mermaid, "   task2 --> task1\n")
@@ -197,7 +168,7 @@ func TestTaskGraphToMermaidWithTaskRef(t *testing.T) {
 	graph.PipelineName = testPipelineName
 
 	// Test the ToMermaidWithTaskRef method
-	mermaid, err := graph.ToMermaidWithTaskRef()
+	mermaid, err := graph.ToMermaid(true)
 	assert.NoError(t, err)
 	assert.Contains(t, mermaid, "---\ntitle: test-pipeline\n---\nflowchart TD\n")
 	assert.Contains(t, mermaid, "   task2(\"task2\n   (taskRef2)\") --> task1(\"task1\n   (taskRef1)\")\n")

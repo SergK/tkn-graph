@@ -95,3 +95,45 @@ title {{ .PipelineName }}
 {{ end }}
 @enduml
 `
+
+const dotTemplate = `digraph {{ .Name }} {
+   labelloc="t"
+   label="{{ .PipelineName }}"
+   end [shape="point" width=0.2]
+   start [shape="point" width=0.2]
+ {{- range $node := .Nodes }}
+ {{- if $node.IsRoot }}
+   "start" -> "{{ $node.Name }}"
+ {{- end }}
+ {{- if eq (len $node.Dependencies) 0 }}
+   "{{ $node.Name }}" -> "end"
+ {{- end }}
+ {{- range $dep := $node.Dependencies }}
+   "{{ $node.Name }}" -> "{{ $dep.Name }}"
+ {{- end }}
+ {{ end }}
+ }
+ `
+
+const dotTemplateWithTaskRef = `digraph {{ .Name }} {
+   labelloc="t"
+   label="{{ .PipelineName }}"
+   "end" [shape="point" width=0.2]
+   "start" [shape="point" width=0.2]
+ {{- range $node := .Nodes }}
+ {{- if $node.IsRoot }}
+   "start" -> "{{ $node.Name }}
+({{ $node.TaskRefName }})"
+ {{- end }}
+ {{- if eq (len $node.Dependencies) 0 }}
+   "{{ $node.Name }}
+({{ $node.TaskRefName }})" -> "end"
+ {{- end }}
+ {{- range $dep := $node.Dependencies }}
+   "{{ $node.Name }}
+({{ $node.TaskRefName }})" -> "{{ $dep.Name }}
+({{ $dep.TaskRefName }})"
+ {{- end }}
+ {{ end }}
+ }
+ `

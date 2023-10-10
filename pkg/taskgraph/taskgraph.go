@@ -1,7 +1,6 @@
 package taskgraph
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,12 +20,6 @@ type TaskNode struct {
 	TaskRefName  string // Name of the kind: Task referenced by this task in the pipeline
 	Dependencies []*TaskNode
 	IsRoot       bool // Flag to indicate the the node is the root of the graph
-}
-
-type DOT struct {
-	Name   string
-	Edges  []string
-	Format string
 }
 
 // FormatFunc is a function that generates the output format string for a TaskGraph
@@ -71,63 +64,26 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 	return graph
 }
 
-// ToDOT converts a TaskGraph to a DOT graph
-func (g *TaskGraph) ToDOT() *DOT {
-	dot := &DOT{
-		Name:   g.PipelineName,
-		Format: "digraph",
+func (g *TaskGraph) ToDOT(withTaskRef bool) (string, error) {
+	var builder strings.Builder
+	var tmpl *template.Template
+	if withTaskRef {
+		tmpl = template.Must(template.New("dot").Parse(dotTemplateWithTaskRef))
+	} else {
+		tmpl = template.Must(template.New("dot").Parse(dotTemplate))
 	}
-
-	for _, node := range g.Nodes {
-		if node.IsRoot {
-			// "start" is the special node that represents the start of the pipeline
-			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"start\" -> \"%s\"", node.Name))
-		}
-		if len(node.Dependencies) == 0 {
-			// "end" is the special node that represents the end of the pipeline
-			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\" -> \"end\"", node.Name))
-		}
-		for _, dep := range node.Dependencies {
-			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\" -> \"%s\"", node.Name, dep.Name))
-		}
+	if err := tmpl.Execute(&builder, struct {
+		PipelineName string
+		Nodes        map[string]*TaskNode
+		Name         string
+	}{
+		PipelineName: g.PipelineName,
+		Nodes:        g.Nodes,
+		Name:         "G",
+	}); err != nil {
+		return "", fmt.Errorf("failed to execute dot template: %w", err)
 	}
-
-	return dot
-}
-
-// ToDOTWithTaskRef converts a TaskGraph to a DOT graph
-func (g *TaskGraph) ToDOTWithTaskRef() *DOT {
-	dot := &DOT{
-		Name:   g.PipelineName,
-		Format: "digraph",
-	}
-
-	for _, node := range g.Nodes {
-		if node.IsRoot {
-			// "start" is the special node that represents the start of the pipeline
-			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"start\" -> \"%s\n(%s)\"", node.Name, node.TaskRefName))
-		}
-		if len(node.Dependencies) == 0 {
-			// "end" is the special node that represents the end of the pipeline
-			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\n(%s)\" -> \"end\"", node.Name, node.TaskRefName))
-		}
-		for _, dep := range node.Dependencies {
-			dot.Edges = append(dot.Edges, fmt.Sprintf("  \"%s\n(%s)\" -> \"%s\n(%s)\"", node.Name, node.TaskRefName, dep.Name, dep.TaskRefName))
-		}
-	}
-
-	return dot
-}
-
-// String converts a DOT graph to a string
-func (d *DOT) String() string {
-	var buf bytes.Buffer
-	buf.WriteString(fmt.Sprintf("%s {\n  labelloc=\"t\"\n  label=\"%s\"\n  end [shape=\"point\" width=0.2]\n  start [shape=\"point\" width=0.2]\n", d.Format, d.Name))
-	for _, edge := range d.Edges {
-		buf.WriteString(fmt.Sprintf("%s\n", edge))
-	}
-	buf.WriteString("}\n")
-	return buf.String()
+	return builder.String(), nil
 }
 
 func (g *TaskGraph) ToPlantUML(withTaskRef bool) (string, error) {
@@ -151,16 +107,14 @@ func (g *TaskGraph) ToPlantUML(withTaskRef bool) (string, error) {
 	return builder.String(), nil
 }
 
-func (g *TaskGraph) ToMermaid() (string, error) {
-	return generateMermaid(g, mermaidTemplate)
-}
-
-func (g *TaskGraph) ToMermaidWithTaskRef() (string, error) {
-	return generateMermaid(g, mermaidTemplateWithTaskRef)
-}
-
-func generateMermaid(g *TaskGraph, tmpl string) (string, error) {
+func (g *TaskGraph) ToMermaid(withTaskRef bool) (string, error) {
 	var builder strings.Builder
+	var tmpl string
+	if withTaskRef {
+		tmpl = mermaidTemplateWithTaskRef
+	} else {
+		tmpl = mermaidTemplate
+	}
 	t, err := template.New("mermaid").Parse(tmpl)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse mermaid template: %w", err)
@@ -175,17 +129,11 @@ func generateMermaid(g *TaskGraph, tmpl string) (string, error) {
 var formatFunc formatFuncType = func(graph *TaskGraph, format string, withTaskRef bool) (string, error) {
 	switch strings.ToLower(format) {
 	case "dot":
-		if withTaskRef {
-			return graph.ToDOTWithTaskRef().String(), nil
-		}
-		return graph.ToDOT().String(), nil
+		return graph.ToDOT(withTaskRef)
 	case "puml":
 		return graph.ToPlantUML(withTaskRef)
 	case "mmd":
-		if withTaskRef {
-			return graph.ToMermaidWithTaskRef()
-		}
-		return graph.ToMermaid()
+		return graph.ToMermaid(withTaskRef)
 	default:
 		return "", fmt.Errorf("Invalid output format: %s", format)
 	}
