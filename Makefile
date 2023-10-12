@@ -5,6 +5,7 @@ GOTEST=$(GOCMD) test
 GOLINT=golangci-lint run
 GOFMT=$(GOCMD) fmt
 GOVET=$(GOCMD) vet
+CURRENT_DIR=$(shell pwd)
 
 # Binary name
 BINARY_NAME=tkn-graph
@@ -24,7 +25,7 @@ build: ## build the binary
 # Test targets
 .PHONY: test
 test: ## run tests
-	$(GOTEST) -v -coverprofile=coverage.out ./...
+	KUBECONFIG=${CURRENT_DIR}/hack/kubeconfig-stub.yaml $(GOTEST) -v -coverprofile=coverage.out ./...
 
 # Lint targets
 .PHONY: lint
