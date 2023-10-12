@@ -1,12 +1,9 @@
 package cmd
 
 import (
-	"os"
-
 	"github.com/sergk/tkn-graph/pkg/cmd/pipeline"
 	"github.com/sergk/tkn-graph/pkg/cmd/pipelinerun"
 	"github.com/spf13/cobra"
-	"github.com/spf13/pflag"
 	"github.com/tektoncd/cli/pkg/cli"
 )
 
@@ -35,8 +32,6 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 `
 
 func Root(p cli.Params) *cobra.Command {
-	// Reset CommandLine so we don't get the flags from the libraries, i.e:
-	pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ExitOnError)
 
 	cmd := &cobra.Command{
 		Use:          "tkn-graph",
