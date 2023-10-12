@@ -7,6 +7,8 @@
 - [Tekton Graph](#tekton-graph)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
+    - [Downloading the Binary](#downloading-the-binary)
+    - [Building from Source](#building-from-source)
   - [Usage](#usage)
     - [Run the Command](#run-the-command)
     - [Examples](#examples)
@@ -32,7 +34,20 @@ Before using the `tkn-graph` tool, you should ensure you have the following prer
 
 ## Installation
 
+### Downloading the Binary
+
 Download the latest binary from the [releases page](https://github.com/sergk/tkn-graph/releases/latest)
+
+### Installing with Homebrew
+
+You can install the `tkn-graph` tool using [Homebrew](https://brew.sh/):
+
+```bash
+brew tap sergk/homebrew-tap
+brew install sergk/tap/tkn-graph
+```
+
+### Building from Source
 
 or building locally:
 

@@ -2,6 +2,23 @@
 ## [Unreleased]
 
 
+<a name="v0.5.0"></a>
+## [v0.5.0] - 2023-10-12
+### Code Refactoring
+
+- Move common graph logic to separate package
+
+### Testing
+
+- Add fake kubeconfig
+
+### Routine
+
+- Add brew package delivery
+- Update .gorelease.yaml fromatting
+- Update changelog
+
+
 <a name="v0.4.0"></a>
 ## [v0.4.0] - 2023-10-10
 ### Features
@@ -92,7 +109,8 @@
 - Update README.md file
 
 
-[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.5.0...HEAD
+[v0.5.0]: https://github.com/sergk/tkn-graph/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/sergk/tkn-graph/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/sergk/tkn-graph/compare/v0.2.0...v0.3.0
 [v0.2.0]: https://github.com/sergk/tkn-graph/compare/v0.1.0...v0.2.0
