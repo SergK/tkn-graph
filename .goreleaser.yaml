@@ -81,6 +81,26 @@ release:
     owner: Sergk
     name: tkn-graph
 
+brews:
+  - name: tkn-graph
+    repository:
+      owner: sergk
+      name: homebrew-tap
+    folder: Formula
+    homepage: "https://github.com/sergk/tkn-graph"
+    license: Apache-2.0
+    description: Tekton CLI - The command line interface for Pipeline, PipelineRun presentation in Graph
+    test: |
+      system "#{bin}/tkn-graph", "--help"
+    install: |
+      bin.install_symlink "tkn" => "kubectl-tkn-graph"
+      bin.install "tkn-graph" => "tkn-graph"
+      output = Utils.popen_read("SHELL=bash #{bin}/tkn-graph completion bash")
+      (bash_completion/"tkn-graph").write output
+      output = Utils.popen_read("SHELL=zsh #{bin}/tkn-graph completion zsh")
+      (zsh_completion/"_tkn-graph").write output
+      prefix.install_metafiles
+
 # signs the checksum file
 # all files (including the sboms) are included in the checksum, so we don't need to sign each one if we don't want to
 # https://goreleaser.com/customization/sign
