@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/tektoncd/cli/pkg/cli"
@@ -9,6 +10,10 @@ import (
 func TestRoot(t *testing.T) {
 	// Create a new cobra command.
 	cmd := Root(&cli.TektonParams{})
+
+	// Create a Buffer to capture the output.
+	out := new(bytes.Buffer)
+	cmd.SetOut(out)
 
 	// Execute the command.
 	if err := cmd.Execute(); err != nil {
