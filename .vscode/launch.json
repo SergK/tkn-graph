@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${fileDirname}",
-            "args": ["pipeline", "graph", "demo", "--namespace", "demo", "--output-format", "mmd"],
+            "args": ["pipelinerun", "graph", "--namespace", "demo", "--output-format", "mmd"],
             "cwd": "${workspaceFolder}"
         }
     ]
