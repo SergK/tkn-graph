@@ -1,4 +1,4 @@
-package graphutil
+package common
 
 import (
 	"fmt"
@@ -11,20 +11,29 @@ import (
 	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 )
 
+// GraphOptions holds the options for the graph command
+// OutputFormat: dot, puml, mmd
+// OutputDir: the directory to save the output files. Otherwise, the output is printed to the screen
+// WithTaskRef: Include TaskRefName information in the output
 type GraphOptions struct {
 	OutputFormat string
 	OutputDir    string
 	WithTaskRef  bool
 }
 
-type GraphData struct {
-	Name string
-	Spec v1.PipelineSpec
+// Holds the Pipeline name and the Pipeline itself, in case of PipelineRun it holds the PipelineRun name and the Pipeline
+type Pipeline struct {
+	Name           string
+	TektonPipeline v1.Pipeline
 }
 
-type GraphFetcher func(cs *cli.Clients, name []string, namespace string) ([]GraphData, error)
+// GraphFetcher is an interface that defines the methods to fetch the Pipeline
+type GraphFetcher interface {
+	GetByName(cs *cli.Clients, name, namespace string) (*Pipeline, error)
+	GetAll(cs *cli.Clients, namespace string) ([]Pipeline, error)
+}
 
-func NewGraphCommand(p cli.Params, runE func(cmd *cobra.Command, args []string, p cli.Params, opts *GraphOptions) error) *cobra.Command {
+func CreateGraphCommand(p cli.Params, fetcher GraphFetcher) *cobra.Command {
 	opts := &GraphOptions{}
 	// Define the root command
 	c := &cobra.Command{
@@ -46,7 +55,7 @@ func NewGraphCommand(p cli.Params, runE func(cmd *cobra.Command, args []string, 
 			return prerun.ValidateGraphPreRunE(opts.OutputFormat)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runE(cmd, args, p, opts)
+			return RunGraphCommand(p, opts, fetcher, args)
 		},
 	}
 
@@ -61,23 +70,35 @@ func NewGraphCommand(p cli.Params, runE func(cmd *cobra.Command, args []string, 
 	return c
 }
 
-func RunGraphCommand(args []string, p cli.Params, opts *GraphOptions, fetcher GraphFetcher) error {
+func RunGraphCommand(p cli.Params, opts *GraphOptions, fetcher GraphFetcher, args []string) error {
 	cs, err := p.Clients()
 	if err != nil {
 		return err
 	}
 
 	var graphs []*taskgraph.TaskGraph
-	var data []GraphData
+	var pipelines []Pipeline
 
-	data, err = fetcher(cs, args, p.Namespace())
-	if err != nil {
-		return fmt.Errorf("failed to fetch data: %w", err)
+	switch len(args) {
+	case 1:
+		var pipeline *Pipeline
+		pipeline, err = fetcher.GetByName(cs, args[0], p.Namespace())
+		if err != nil {
+			return fmt.Errorf("failed to run GetByName: %w", err)
+		}
+		pipelines = append(pipelines, *pipeline)
+	case 0:
+		pipelines, err = fetcher.GetAll(cs, p.Namespace())
+		if err != nil {
+			return fmt.Errorf("failed to run GetAll: %w", err)
+		}
+	default:
+		return fmt.Errorf("too many arguments. Provide either no arguments to get all Pipelines or a single Pipeline name")
 	}
 
-	for i := range data {
-		graph := taskgraph.BuildTaskGraph(data[i].Spec.Tasks)
-		graph.PipelineName = data[i].Name
+	for i := range pipelines {
+		graph := taskgraph.BuildTaskGraph(pipelines[i].TektonPipeline.Spec.Tasks)
+		graph.PipelineName = pipelines[i].Name
 		graphs = append(graphs, graph)
 	}
 
