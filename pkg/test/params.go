@@ -24,6 +24,11 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+const (
+	TestYear = 1984
+	TestDay  = 4
+)
+
 type Params struct {
 	ns, kubeCfg, kubeCtx string
 	Tekton               versioned.Interface
@@ -93,5 +98,5 @@ func (p *Params) Time() clockwork.Clock {
 }
 
 func FakeClock() clockwork.FakeClock {
-	return clockwork.NewFakeClockAt(time.Date(1984, time.April, 4, 0, 0, 0, 0, time.UTC))
+	return clockwork.NewFakeClockAt(time.Date(TestYear, time.April, TestDay, 0, 0, 0, 0, time.UTC))
 }

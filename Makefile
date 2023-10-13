@@ -1,6 +1,8 @@
+PACKAGE=github.com/sergk/tkn-graph/pkg/cmd
+
 # Go parameters
 GOCMD=go
-GOBUILD=$(GOCMD) build
+GOBUILD=$(GOCMD) build -v
 GOTEST=$(GOCMD) test
 GOLINT=golangci-lint run
 GOFMT=$(GOCMD) fmt
@@ -9,6 +11,12 @@ CURRENT_DIR=$(shell pwd)
 
 # Binary name
 BINARY_NAME=tkn-graph
+
+# Versioning
+GIT_DESCRIBE=$(shell git describe --tags --always --dirty)
+LDFLAGS=-ldflags "-X $(PACKAGE)/cliVersion=$(GIT_DESCRIBE)"
+
+override GCFLAGS +=all=-trimpath=${CURRENT_DIR}
 
 .DEFAULT_GOAL:=help
 
@@ -20,7 +28,7 @@ BIN_DIR=./bin
 # Build targets
 .PHONY: build
 build: ## build the binary
-	$(GOBUILD) -o $(DIST_DIR)/$(BINARY_NAME) $(SRC_DIR)/...
+	CGO_ENABLED=0 $(GOBUILD) $(LDFLAGS) -o $(DIST_DIR)/$(BINARY_NAME) -gcflags '${GCFLAGS}' $(SRC_DIR)/...
 
 # Test targets
 .PHONY: test

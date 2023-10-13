@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/sergk/tkn-graph/pkg/cmd/pipeline"
 	"github.com/sergk/tkn-graph/pkg/cmd/pipelinerun"
+	"github.com/sergk/tkn-graph/pkg/cmd/version"
 	"github.com/spf13/cobra"
 	"github.com/tektoncd/cli/pkg/cli"
 )
@@ -16,7 +17,10 @@ Aliases:
 Examples:
 {{.Example}}{{end}}{{if .HasAvailableSubCommands}}
 
-Available Commands:{{range .Commands}}{{if (or .IsAvailableCommand (eq .Name "help"))}}
+Available Commands:{{range .Commands}}{{if (eq .Annotations.commandType "main")}}
+  {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
+
+Other Commands:{{range .Commands}}{{if (or (eq .Annotations.commandType "utility") (eq .Name "help"))}}
   {{rpad .Name .NamePadding }} {{.Short}}{{end}}{{end}}{{end}}{{if .HasAvailableLocalFlags}}
 
 Flags:
@@ -44,6 +48,7 @@ func Root(p cli.Params) *cobra.Command {
 	cmd.AddCommand(
 		pipeline.Command(p),
 		pipelinerun.Command(p),
+		version.Command(),
 	)
 
 	return cmd

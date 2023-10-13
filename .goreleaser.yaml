@@ -25,7 +25,7 @@ builds:
     ldflags:
       # use commit date instead of current date as main.date
       # only needed if you actually use those things in your main package, otherwise can be ignored.
-      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{ .CommitDate }}
+      - -w -X github.com/sergk/tkn-graph/pkg/cmd/cliVersion={{.Version}}
 
 archives:
   - name_template: >-

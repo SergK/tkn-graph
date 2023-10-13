@@ -26,7 +26,7 @@ func TestRoot(t *testing.T) {
 	}
 
 	// Assert that the command has the expected subcommands.
-	if len(cmd.Commands()) != 4 {
+	if len(cmd.Commands()) != 5 {
 		t.Errorf("Command does not have the expected subcommands: %v", cmd.Commands())
 	}
 }
