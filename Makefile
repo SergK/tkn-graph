@@ -14,7 +14,7 @@ BINARY_NAME=tkn-graph
 
 # Versioning
 GIT_DESCRIBE=$(shell git describe --tags --always --dirty)
-LDFLAGS=-ldflags "-X $(PACKAGE)/cliVersion=$(GIT_DESCRIBE)"
+LDFLAGS=-ldflags "-X $(PACKAGE)/version.cliVersion=$(GIT_DESCRIBE)"
 
 override GCFLAGS +=all=-trimpath=${CURRENT_DIR}
 
