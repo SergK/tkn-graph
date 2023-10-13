@@ -2,6 +2,26 @@
 ## [Unreleased]
 
 
+<a name="v0.6.0"></a>
+## [v0.6.0] - 2023-10-13
+### Code Refactoring
+
+- Refactor common graph approach both for Pipeline/PipelineRun
+- Remove unused variables from function signature
+
+### Testing
+
+- Hide output in tests
+
+### Routine
+
+- We don't have plugins
+
+### Documentation
+
+- How to install with Homebrew
+
+
 <a name="v0.5.0"></a>
 ## [v0.5.0] - 2023-10-12
 ### Code Refactoring
@@ -109,7 +129,8 @@
 - Update README.md file
 
 
-[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.6.0...HEAD
+[v0.6.0]: https://github.com/sergk/tkn-graph/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/sergk/tkn-graph/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/sergk/tkn-graph/compare/v0.3.0...v0.4.0
 [v0.3.0]: https://github.com/sergk/tkn-graph/compare/v0.2.0...v0.3.0
