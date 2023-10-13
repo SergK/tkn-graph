@@ -2,6 +2,20 @@
 ## [Unreleased]
 
 
+<a name="v0.6.2"></a>
+## [v0.6.2] - 2023-10-13
+### Bug Fixes
+
+- Fix version path in ldflag
+
+
+<a name="v0.6.1"></a>
+## [v0.6.1] - 2023-10-13
+### Features
+
+- Add version command
+
+
 <a name="v0.6.0"></a>
 ## [v0.6.0] - 2023-10-13
 ### Code Refactoring
@@ -15,6 +29,7 @@
 
 ### Routine
 
+- Update changelog
 - We don't have plugins
 
 ### Documentation
@@ -129,7 +144,9 @@
 - Update README.md file
 
 
-[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/sergk/tkn-graph/compare/v0.6.2...HEAD
+[v0.6.2]: https://github.com/sergk/tkn-graph/compare/v0.6.1...v0.6.2
+[v0.6.1]: https://github.com/sergk/tkn-graph/compare/v0.6.0...v0.6.1
 [v0.6.0]: https://github.com/sergk/tkn-graph/compare/v0.5.0...v0.6.0
 [v0.5.0]: https://github.com/sergk/tkn-graph/compare/v0.4.0...v0.5.0
 [v0.4.0]: https://github.com/sergk/tkn-graph/compare/v0.3.0...v0.4.0
