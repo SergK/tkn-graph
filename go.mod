@@ -3,8 +3,10 @@ module github.com/sergk/tkn-graph
 go 1.21.1
 
 require (
+	github.com/jonboulle/clockwork v0.4.0
 	github.com/stretchr/testify v1.8.4
 	github.com/tektoncd/cli v0.32.0
+	k8s.io/client-go v0.28.2
 )
 
 require (
@@ -35,7 +37,6 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jonboulle/clockwork v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
@@ -51,6 +52,7 @@ require (
 	github.com/prometheus/procfs v0.10.1 // indirect
 	github.com/prometheus/statsd_exporter v0.21.0 // indirect
 	github.com/stoewer/go-strcase v1.2.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
 	github.com/tektoncd/triggers v0.25.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
@@ -67,7 +69,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/api v0.28.2 // indirect
 	k8s.io/apiextensions-apiserver v0.26.5 // indirect
-	k8s.io/client-go v0.28.2 // indirect
 	k8s.io/kube-openapi v0.0.0-20230717233707-2695361300d9 // indirect
 	knative.dev/pkg v0.0.0-20230718152110-aef227e72ead // indirect
 )
