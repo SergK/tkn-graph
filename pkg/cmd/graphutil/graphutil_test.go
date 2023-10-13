@@ -91,9 +91,7 @@ func TestRunGraphCommand(t *testing.T) {
 				WithTaskRef:  false,
 			}
 
-			cmd := &cobra.Command{}
-
-			err := graphutil.RunGraphCommand(cmd, []string{}, p, opts, fetcher)
+			err := graphutil.RunGraphCommand([]string{}, p, opts, fetcher)
 
 			if tt.expectingError && err == nil {
 				t.Errorf("Expected an error, got nil")
@@ -122,9 +120,7 @@ func TestRunGraphCommand_ErrorFetcher(t *testing.T) {
 		WithTaskRef:  false,
 	}
 
-	cmd := &cobra.Command{}
-
-	err := graphutil.RunGraphCommand(cmd, []string{}, p, opts, fetcher)
+	err := graphutil.RunGraphCommand([]string{}, p, opts, fetcher)
 
 	if err == nil {
 		t.Errorf("Expected an error, got nil")

@@ -12,7 +12,7 @@ import (
 
 func graphCommand(p cli.Params) *cobra.Command {
 	return graphutil.NewGraphCommand(p, func(cmd *cobra.Command, args []string, p cli.Params, opts *graphutil.GraphOptions) error {
-		return graphutil.RunGraphCommand(cmd, args, p, opts, func(cs *cli.Clients, args []string, namespace string) ([]graphutil.GraphData, error) {
+		return graphutil.RunGraphCommand(args, p, opts, func(cs *cli.Clients, args []string, namespace string) ([]graphutil.GraphData, error) {
 			var pipelines []v1.Pipeline
 			var err error
 

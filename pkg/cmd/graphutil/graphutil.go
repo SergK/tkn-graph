@@ -61,7 +61,7 @@ func NewGraphCommand(p cli.Params, runE func(cmd *cobra.Command, args []string, 
 	return c
 }
 
-func RunGraphCommand(cmd *cobra.Command, args []string, p cli.Params, opts *GraphOptions, fetcher GraphFetcher) error {
+func RunGraphCommand(args []string, p cli.Params, opts *GraphOptions, fetcher GraphFetcher) error {
 	cs, err := p.Clients()
 	if err != nil {
 		return err
