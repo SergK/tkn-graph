@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/sergk/tkn-graph/pkg/cmd/completion"
 	"github.com/sergk/tkn-graph/pkg/cmd/pipeline"
 	"github.com/sergk/tkn-graph/pkg/cmd/pipelinerun"
 	"github.com/sergk/tkn-graph/pkg/cmd/version"
@@ -49,6 +50,7 @@ func Root(p cli.Params) *cobra.Command {
 		pipeline.Command(p),
 		pipelinerun.Command(p),
 		version.Command(),
+		completion.Command(),
 	)
 
 	return cmd
