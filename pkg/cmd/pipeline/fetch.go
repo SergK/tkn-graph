@@ -31,7 +31,7 @@ func (f *PipelineFetcher) GetAll(cs *cli.Clients, namespace string) ([]common.Pi
 		return nil, fmt.Errorf("failed to get all Pipelines: %w", err)
 	}
 
-	var cp []common.Pipeline
+	cp := make([]common.Pipeline, 0, len(ps))
 	for i := range ps {
 		cp = append(cp, common.Pipeline{
 			Name:           ps[i].Name,

@@ -59,8 +59,8 @@ func (p *Params) KubeConfigPath() string {
 	return p.kubeCfg
 }
 
-func (p *Params) tektonClient() (versioned.Interface, error) {
-	return p.Tekton, nil
+func (p *Params) tektonClient() versioned.Interface {
+	return p.Tekton
 }
 
 func (p *Params) KubeClient() (k8s.Interface, error) {
@@ -72,10 +72,7 @@ func (p *Params) Clients(_ ...*rest.Config) (*cli.Clients, error) {
 		return p.Cls, nil
 	}
 
-	tekton, err := p.tektonClient()
-	if err != nil {
-		return nil, err
-	}
+	tekton := p.tektonClient()
 
 	kube, err := p.KubeClient()
 	if err != nil {
@@ -94,6 +91,7 @@ func (p *Params) Time() clockwork.Clock {
 	if p.Clock == nil {
 		p.Clock = FakeClock()
 	}
+
 	return p.Clock
 }
 

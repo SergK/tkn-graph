@@ -23,7 +23,10 @@ override GCFLAGS +=all=-trimpath=${CURRENT_DIR}
 # Directories
 SRC_DIR=./cmd/graph
 DIST_DIR=./dist
-BIN_DIR=./bin
+
+BIN_DIR ?= ${CURRENT_DIR}/bin
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
 # Build targets
 .PHONY: build
@@ -35,10 +38,13 @@ build: ## build the binary
 test: ## run tests
 	KUBECONFIG=${CURRENT_DIR}/hack/kubeconfig-stub.yaml $(GOTEST) -v -coverprofile=coverage.out ./...
 
-# Lint targets
 .PHONY: lint
-lint: ## run linter
-	$(GOLINT) ./...
+lint: golangci-lint ## Run go lint
+	$(GOLANGCI_LINT) run -v -c .golangci.yaml ./...
+
+.PHONY: lint-fix
+lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes
+	$(GOLANGCI_LINT) run --fix -v -c .golangci.yaml ./...
 
 # Format targets
 .PHONY: fmt
@@ -52,7 +58,7 @@ vet:  ## Run go vet
 # Clean targets
 .PHONY: clean
 clean: ## remove the binary
-	rm -rf $(DIST_DIR)
+	rm -rf $(DIST_DIR) $(BIN_DIR)
 
 # make CI run all targets
 .PHONY: all
@@ -72,22 +78,28 @@ endif
 help: ## Display this help
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z0-9_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
-GITCHGLOG = ${BIN_DIR}/git-chglog
-.PHONY: git-chglog
-git-chglog: ## Download git-chglog locally if necessary.
-	$(call go-get-tool,$(GITCHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,v0.15.4)
+GOLANGCI_LINT = ${CURRENT_DIR}/bin/golangci-lint
+.PHONY: golangci-lint
+golangci-lint: ## Download golangci-lint locally if necessary.
+	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,v1.64.7)
 
-# go-get-tool will 'go get' any package $2 and install it to $1.
-PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
-define go-get-tool
-@[ -f $(1) ] || { \
-set -e ;\
-TMP_DIR=$$(mktemp -d) ;\
-cd $$TMP_DIR ;\
-go mod init tmp ;\
-echo "Downloading $(2)" ;\
-go get -d $(2)@$(3) ;\
-GOBIN=$(PROJECT_DIR)/bin go install $(2) ;\
-rm -rf $$TMP_DIR ;\
-}
+GITCHGLOG = $(BIN_DIR)/git-chglog
+.PHONY: git-chglog
+git-chglog: $(BIN_DIR) ## Download git-chglog locally if necessary.
+	$(call go-install-tool,$(GITCHGLOG),github.com/git-chglog/git-chglog/cmd/git-chglog,v0.15.4)
+
+# go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
+# $1 - target path with name of binary
+# $2 - package url which can be installed
+# $3 - specific version of package
+define go-install-tool
+@[ -f "$(1)-$(3)" ] || { \
+set -e; \
+package=$(2)@$(3) ;\
+echo "Downloading $${package}" ;\
+rm -f $(1) || true ;\
+GOBIN=$(BIN_DIR) go install $${package} ;\
+mv $(1) $(1)-$(3) ;\
+} ;\
+ln -sf $(1)-$(3) $(1)
 endef

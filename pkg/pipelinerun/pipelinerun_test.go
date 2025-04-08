@@ -55,12 +55,12 @@ func TestGetAllPipelineRuns(t *testing.T) {
 	if len(pipelineRuns) != len(expectedPipelineRuns) {
 		t.Fatalf("Expected %d pipelineRuns, got %d", len(expectedPipelineRuns), len(pipelineRuns))
 	}
+
 	for i, pr := range pipelineRuns {
 		if pr.Name != expectedPipelineRuns[i].Name {
 			t.Fatalf("Expected pipelineRuns %d to have name %s, got %s", i, expectedPipelineRuns[i].Name, pr.Name)
 		}
 	}
-
 }
 
 func TestGetAllPipelineRunsWithError(t *testing.T) {
@@ -75,6 +75,7 @@ func TestGetAllPipelineRunsWithError(t *testing.T) {
 	if err == nil {
 		t.Fatal("GetAllPipelineRuns did not return an error, expected an error")
 	}
+
 	if err.Error() != "no PipelineRuns found in namespace my-namespace" {
 		t.Fatalf("Expected error message to be 'no PipelineRuns found in namespace my-namespace', got %s", err.Error())
 	}
@@ -125,6 +126,7 @@ func TestPipelineByNameWithError(t *testing.T) {
 	if err == nil {
 		t.Fatal("GetPipelineRunsByName did not return an error, expected an error")
 	}
+
 	if err.Error() != "failed to get PipelineRun with name fake-pipeline: pipelineruns.tekton.dev \"fake-pipeline\" not found" {
 		t.Fatalf("Expected error message to be 'failed to get PipelineRun with name fake-pipeline: pipelineruns.tekton.dev \"fake-pipeline\" not found', got %s", err.Error())
 	}

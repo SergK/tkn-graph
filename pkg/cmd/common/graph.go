@@ -76,16 +76,17 @@ func RunGraphCommand(p cli.Params, opts *GraphOptions, fetcher GraphFetcher, arg
 		return err
 	}
 
-	var graphs []*taskgraph.TaskGraph
 	var pipelines []Pipeline
 
 	switch len(args) {
 	case 1:
 		var pipeline *Pipeline
+
 		pipeline, err = fetcher.GetByName(cs, args[0], p.Namespace())
 		if err != nil {
 			return fmt.Errorf("failed to run GetByName: %w", err)
 		}
+
 		pipelines = append(pipelines, *pipeline)
 	case 0:
 		pipelines, err = fetcher.GetAll(cs, p.Namespace())
@@ -95,6 +96,9 @@ func RunGraphCommand(p cli.Params, opts *GraphOptions, fetcher GraphFetcher, arg
 	default:
 		return fmt.Errorf("too many arguments. Provide either no arguments to get all Pipelines or a single Pipeline name")
 	}
+
+	// Pre-allocate the graphs slice based on the number of pipelines
+	graphs := make([]*taskgraph.TaskGraph, 0, len(pipelines))
 
 	for i := range pipelines {
 		graph := taskgraph.BuildTaskGraph(pipelines[i].TektonPipeline.Spec.Tasks)
