@@ -66,12 +66,14 @@ func BuildTaskGraph(tasks []v1pipeline.PipelineTask) *TaskGraph {
 
 func (g *TaskGraph) ToDOT(withTaskRef bool) (string, error) {
 	var builder strings.Builder
+
 	var tmpl *template.Template
 	if withTaskRef {
 		tmpl = template.Must(template.New("dot").Parse(dotTemplateWithTaskRef))
 	} else {
 		tmpl = template.Must(template.New("dot").Parse(dotTemplate))
 	}
+
 	if err := tmpl.Execute(&builder, struct {
 		PipelineName string
 		Nodes        map[string]*TaskNode
@@ -83,43 +85,54 @@ func (g *TaskGraph) ToDOT(withTaskRef bool) (string, error) {
 	}); err != nil {
 		return "", fmt.Errorf("failed to execute dot template: %w", err)
 	}
+
 	return builder.String(), nil
 }
 
 func (g *TaskGraph) ToPlantUML(withTaskRef bool) (string, error) {
 	var builder strings.Builder
+
 	funcMap := template.FuncMap{
 		"replace": strings.ReplaceAll,
 	}
+
 	var tmpl *template.Template
+
 	var err error
 	if withTaskRef {
 		tmpl, err = template.New("plantuml").Funcs(funcMap).Parse(plantumlTemplateWithTaskRef)
 	} else {
 		tmpl, err = template.New("plantuml").Funcs(funcMap).Parse(plantumlTemplate)
 	}
+
 	if err != nil {
 		return "", fmt.Errorf("failed to parse plantuml template: %w", err)
 	}
+
 	if err := tmpl.Execute(&builder, g); err != nil {
 		return "", fmt.Errorf("failed to execute plantuml template: %w", err)
 	}
+
 	return builder.String(), nil
 }
 
 func (g *TaskGraph) ToMermaid(withTaskRef bool) (string, error) {
 	var builder strings.Builder
+
 	tmpl := mermaidTemplate
 	if withTaskRef {
 		tmpl = mermaidTemplateWithTaskRef
 	}
+
 	t, err := template.New("mermaid").Parse(tmpl)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse mermaid template: %w", err)
 	}
+
 	if err := t.Execute(&builder, g); err != nil {
 		return "", fmt.Errorf("failed to execute mermaid template: %w", err)
 	}
+
 	return builder.String(), nil
 }
 
@@ -144,8 +157,10 @@ func PrintAllGraphs(graphs []*TaskGraph, outputFormat string, withTaskRef bool) 
 		if err != nil {
 			return fmt.Errorf("Failed to generate output: %w", err)
 		}
+
 		fmt.Println(output)
 	}
+
 	return nil
 }
 
@@ -155,16 +170,20 @@ func WriteAllGraphs(graphs []*TaskGraph, outputFormat string, outputDir string, 
 	if err != nil {
 		return fmt.Errorf("Failed to create directory %s: %w", outputDir, err)
 	}
+
 	for _, graph := range graphs {
 		output, err := formatFunc(graph, outputFormat, withTaskRef)
 		if err != nil {
 			return fmt.Errorf("Failed to generate output: %w", err)
 		}
+
 		filename := filepath.Join(outputDir, fmt.Sprintf("%s.%s", graph.PipelineName, outputFormat))
 		err = os.WriteFile(filename, []byte(output), 0600)
+
 		if err != nil {
 			return fmt.Errorf("Failed to write file %s: %w", filename, err)
 		}
 	}
+
 	return nil
 }

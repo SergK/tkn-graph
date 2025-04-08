@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  GOLANG_VERSION: '1.22'
+  GOLANG_VERSION: '1.24'
 
 jobs:
 
@@ -24,11 +24,8 @@ jobs:
         with:
           go-version: ${{ env.GOLANG_VERSION }}
 
-      - name: Build
-        run: make build
-
-      - name: Test
-        run: make test
+      - name: Build/Test
+        run: make all
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master

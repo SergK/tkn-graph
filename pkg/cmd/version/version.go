@@ -24,7 +24,7 @@ func Command() *cobra.Command {
 			"commandType": "utility",
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Fprintf(cmd.OutOrStdout(), "%s\n", cliVersion)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "%s\n", cliVersion)
 		},
 	}
 }

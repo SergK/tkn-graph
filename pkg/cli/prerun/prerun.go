@@ -11,6 +11,7 @@ func ValidateGraphPreRunE(outputFormat string) error {
 	if !contains(ValidOutputFormats, outputFormat) {
 		return fmt.Errorf("Invalid output format: %s. Allowed formats are: %v", outputFormat, ValidOutputFormats)
 	}
+
 	return nil
 }
 
@@ -21,5 +22,6 @@ func contains(s []string, e string) bool {
 			return true
 		}
 	}
+
 	return false
 }

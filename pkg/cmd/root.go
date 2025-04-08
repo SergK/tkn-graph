@@ -37,7 +37,6 @@ Use "{{.CommandPath}} [command] --help" for more information about a command.{{e
 `
 
 func Root(p cli.Params) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:          "tkn-graph",
 		Short:        "Generate a graph of a Tekton Pipelines",

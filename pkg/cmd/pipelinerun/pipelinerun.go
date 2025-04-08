@@ -20,5 +20,6 @@ func Command(p cli.Params) *cobra.Command {
 	cmd.AddCommand(
 		graphCommand(p),
 	)
+
 	return cmd
 }

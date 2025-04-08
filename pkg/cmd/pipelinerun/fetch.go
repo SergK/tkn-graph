@@ -38,12 +38,15 @@ func (f *PipelineRunFetcher) GetAll(cs *cli.Clients, namespace string) ([]common
 		return nil, fmt.Errorf("failed to get all PipelineRuns: %w", err)
 	}
 
-	var cp []common.Pipeline
+	// Pre-allocate the cp slice based on the number of pipeline runs
+	cp := make([]common.Pipeline, 0, len(prs))
+
 	for i := range prs {
 		pipeline, err := f.GetPipelineByNameFunc(cs, prs[i].Spec.PipelineRef.Name, namespace)
 		if err != nil {
 			return nil, fmt.Errorf("failed to get Pipeline by name: %w", err)
 		}
+
 		cp = append(cp, common.Pipeline{
 			Name:           prs[i].Name,
 			TektonPipeline: *pipeline,

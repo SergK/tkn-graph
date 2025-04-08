@@ -69,6 +69,7 @@ $ tkn-graph completion fish > ~/.config/fish/completions/tkn.fish
 func genZshCompletion(cmd *cobra.Command) string {
 	var output bytes.Buffer
 	_ = cmd.Root().GenZshCompletion(&output)
+
 	return fmt.Sprintf("#compdef %s\ncompdef _%s %s\n%s", cmd.Root().Use,
 		cmd.Root().Use, cmd.Root().Use, output.String())
 }
@@ -89,7 +90,7 @@ func Command() *cobra.Command {
 			case "bash":
 				_ = cmd.Root().GenBashCompletion(cmd.OutOrStdout())
 			case "zsh":
-				fmt.Fprint(cmd.OutOrStdout(), genZshCompletion(cmd))
+				_, _ = fmt.Fprint(cmd.OutOrStdout(), genZshCompletion(cmd))
 			case "fish":
 				_ = cmd.Root().GenFishCompletion(cmd.OutOrStdout(), true)
 			case "powershell":
@@ -99,5 +100,6 @@ func Command() *cobra.Command {
 			return nil
 		},
 	}
+
 	return cmd
 }

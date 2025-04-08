@@ -14,9 +14,11 @@ func GetAllPipelines(c *cli.Clients, ns string) ([]v1.Pipeline, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Pipelines: %w", err)
 	}
+
 	if len(pipelines.Items) == 0 {
 		return nil, fmt.Errorf("no Pipelines found in namespace %s", ns)
 	}
+
 	return pipelines.Items, nil
 }
 
@@ -26,5 +28,6 @@ func GetPipelineByName(c *cli.Clients, name string, ns string) (*v1.Pipeline, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to get Pipeline with name %s: %w", name, err)
 	}
+
 	return pipeline, nil
 }
