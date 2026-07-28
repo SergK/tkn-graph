@@ -31,10 +31,10 @@ jobs:
       - name: Build/Test
         run: make all
 
-      # Dependabot and fork pull requests run without access to repository secrets,
-      # so the scan is skipped there rather than failing the whole build.
+      # Dependabot runs with its own secret store and fork pull requests get no
+      # secrets at all, so the scan is skipped there rather than failing the build.
       - name: SonarCloud Scan
-        if: env.SONAR_TOKEN != ''
-        uses: SonarSource/sonarqube-scan-action@v8.2.1
+        if: github.actor != 'dependabot[bot]' && env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@22918119ff8e1ca75a623e15c8296b6ea4fbe28f # v8.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
