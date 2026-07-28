@@ -146,7 +146,7 @@ var formatFunc formatFuncMap = func(graph *TaskGraph, format string, withTaskRef
 	case "mmd":
 		return graph.ToMermaid(withTaskRef)
 	default:
-		return "", fmt.Errorf("Invalid output format: %s", format)
+		return "", fmt.Errorf("invalid output format: %s", format)
 	}
 }
 
@@ -155,7 +155,7 @@ func PrintAllGraphs(graphs []*TaskGraph, outputFormat string, withTaskRef bool) 
 	for _, graph := range graphs {
 		output, err := formatFunc(graph, outputFormat, withTaskRef)
 		if err != nil {
-			return fmt.Errorf("Failed to generate output: %w", err)
+			return fmt.Errorf("failed to generate output: %w", err)
 		}
 
 		fmt.Println(output)
@@ -168,20 +168,20 @@ func PrintAllGraphs(graphs []*TaskGraph, outputFormat string, withTaskRef bool) 
 func WriteAllGraphs(graphs []*TaskGraph, outputFormat string, outputDir string, withTaskRef bool) error {
 	err := os.MkdirAll(outputDir, 0755)
 	if err != nil {
-		return fmt.Errorf("Failed to create directory %s: %w", outputDir, err)
+		return fmt.Errorf("failed to create directory %s: %w", outputDir, err)
 	}
 
 	for _, graph := range graphs {
 		output, err := formatFunc(graph, outputFormat, withTaskRef)
 		if err != nil {
-			return fmt.Errorf("Failed to generate output: %w", err)
+			return fmt.Errorf("failed to generate output: %w", err)
 		}
 
 		filename := filepath.Join(outputDir, fmt.Sprintf("%s.%s", graph.PipelineName, outputFormat))
 		err = os.WriteFile(filename, []byte(output), 0600)
 
 		if err != nil {
-			return fmt.Errorf("Failed to write file %s: %w", filename, err)
+			return fmt.Errorf("failed to write file %s: %w", filename, err)
 		}
 	}
 

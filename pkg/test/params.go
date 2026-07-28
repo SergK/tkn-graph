@@ -95,6 +95,6 @@ func (p *Params) Time() clockwork.Clock {
 	return p.Clock
 }
 
-func FakeClock() clockwork.FakeClock {
+func FakeClock() *clockwork.FakeClock {
 	return clockwork.NewFakeClockAt(time.Date(TestYear, time.April, TestDay, 0, 0, 0, 0, time.UTC))
 }

@@ -11,6 +11,12 @@ import (
 	v1 "github.com/tektoncd/pipeline/pkg/apis/pipeline/v1"
 )
 
+const (
+	testPipelineName = "pipeline1"
+	testTaskName     = "task1"
+	dotFormat        = "dot"
+)
+
 // MockGraphFetcher is a mock implementation of the GraphFetcher interface
 type MockGraphFetcher struct {
 	mock.Mock
@@ -46,15 +52,15 @@ func TestRunGraphCommand(t *testing.T) {
 	p.SetNamespace("default")
 
 	fetcher := new(MockGraphFetcher)
-	fetcher.On("GetByName", mock.Anything, "pipeline1", "default").Return(&Pipeline{
-		Name: "pipeline1",
+	fetcher.On("GetByName", mock.Anything, testPipelineName, "default").Return(&Pipeline{
+		Name: testPipelineName,
 		TektonPipeline: v1.Pipeline{
 			Spec: v1.PipelineSpec{
 				Tasks: []v1.PipelineTask{
 					{
-						Name: "task1",
+						Name: testTaskName,
 						TaskRef: &v1.TaskRef{
-							Name: "task1",
+							Name: testTaskName,
 						},
 					},
 				},
@@ -68,8 +74,8 @@ func TestRunGraphCommand(t *testing.T) {
 		expectError  bool
 		errorMessage string
 	}{
-		{"valid output format", "dot", false, ""},
-		{"invalid output format", "wrong", true, "failed to print graph: Failed to generate output: Invalid output format: wrong"},
+		{"valid output format", dotFormat, false, ""},
+		{"invalid output format", "wrong", true, "failed to print graph: failed to generate output: invalid output format: wrong"},
 	}
 
 	for _, tc := range testCases {
@@ -77,7 +83,7 @@ func TestRunGraphCommand(t *testing.T) {
 			opts := &GraphOptions{
 				OutputFormat: tc.outputFormat,
 			}
-			args := []string{"pipeline1"}
+			args := []string{testPipelineName}
 
 			err := RunGraphCommand(p, opts, fetcher, args)
 
@@ -100,14 +106,14 @@ func TestRunGraphCommandWithGetAll(t *testing.T) {
 	fetcher := new(MockGraphFetcher)
 	fetcher.On("GetAll", mock.Anything, "default").Return([]Pipeline{
 		{
-			Name: "pipeline1",
+			Name: testPipelineName,
 			TektonPipeline: v1.Pipeline{
 				Spec: v1.PipelineSpec{
 					Tasks: []v1.PipelineTask{
 						{
-							Name: "task1",
+							Name: testTaskName,
 							TaskRef: &v1.TaskRef{
-								Name: "task1",
+								Name: testTaskName,
 							},
 						},
 					},
@@ -137,8 +143,8 @@ func TestRunGraphCommandWithGetAll(t *testing.T) {
 		expectError  bool
 		errorMessage string
 	}{
-		{"valid output format", "dot", false, ""},
-		{"invalid output format", "wrong", true, "failed to save graph: Failed to generate output: Invalid output format: wrong"},
+		{"valid output format", dotFormat, false, ""},
+		{"invalid output format", "wrong", true, "failed to save graph: failed to generate output: invalid output format: wrong"},
 	}
 
 	for _, tc := range testCases {
@@ -169,9 +175,9 @@ func TestRunGraphCommandWithTooManyArgs(t *testing.T) {
 
 	fetcher := new(MockGraphFetcher)
 	opts := &GraphOptions{
-		OutputFormat: "dot",
+		OutputFormat: dotFormat,
 	}
-	args := []string{"pipeline1", "pipeline2"} // Two arguments to trigger an error
+	args := []string{testPipelineName, "pipeline2"} // Two arguments to trigger an error
 
 	err := RunGraphCommand(p, opts, fetcher, args)
 
