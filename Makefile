@@ -81,7 +81,7 @@ help: ## Display this help
 GOLANGCI_LINT = ${CURRENT_DIR}/bin/golangci-lint
 .PHONY: golangci-lint
 golangci-lint: ## Download golangci-lint locally if necessary.
-	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/cmd/golangci-lint,v1.64.7)
+	$(call go-install-tool,$(GOLANGCI_LINT),github.com/golangci/golangci-lint/v2/cmd/golangci-lint,v2.12.2)
 
 GITCHGLOG = $(BIN_DIR)/git-chglog
 .PHONY: git-chglog
